@@ -1,0 +1,15 @@
+[project]
+name = "trunk-sim"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "mediapy>=1.2.2",
+    "mujoco>=3.2.7",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "torch>=2.6.0",
+    "tqdm>=4.67.1",
+]
