@@ -49,7 +49,7 @@ class TestTrunkData(unittest.TestCase):
         self.assertEqual(self.data_pos_l12.state_cols, ["x1", "y1", "z1", "x2", "y2", "z2"])
         self.assertEqual(self.data_pos_l12.control_cols, ["ux1", "uy1", "ux2", "uy2"])
         self.assertEqual(self.data_pos_l12.state_dim, 6)
-        self.assertEqual(self.data_pos_l12.controls_dim, 4)
+        self.assertEqual(self.data_pos_l12.control_dim, 4)
         
         # Test position-velocity states
         self.assertEqual(self.data_pos_vel_l3.states, "pos_vel")
@@ -180,7 +180,7 @@ class TestTrunkData(unittest.TestCase):
         
         # Check tensor shapes
         self.assertEqual(inputs.shape[0], self.data_pos_l12.state_dim)
-        self.assertEqual(outputs.shape[0], self.data_pos_l12.controls_dim)
+        self.assertEqual(outputs.shape[0], self.data_pos_l12.control_dim)
         
         # Check values
         np.testing.assert_array_equal(inputs.numpy().astype(np.float32), self.x_pos_batch[0].astype(np.float32))
@@ -190,7 +190,7 @@ class TestTrunkData(unittest.TestCase):
         dataloader = DataLoader(torch_dataset, batch_size=2, shuffle=False)
         for batch_inputs, batch_outputs in dataloader:
             self.assertEqual(batch_inputs.shape, (2, self.data_pos_l12.state_dim))
-            self.assertEqual(batch_outputs.shape, (2, self.data_pos_l12.controls_dim))
+            self.assertEqual(batch_outputs.shape, (2, self.data_pos_l12.control_dim))
             break
     
     def test_custom_convert_to_torch_dataset(self):

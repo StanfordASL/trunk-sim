@@ -1,44 +1,58 @@
-from typing import List, Optional, Tuple
-import numpy as np
 import mujoco
+import numpy as np
 import mediapy as media
+from typing import Tuple, Optional
 
 from trunk_sim.simulator import TrunkSimulator
+from trunk_sim.policy import TrunkPolicy
+from trunk_sim.data import TrunkData
 
-framerate_hz = 30
 
-def rollout(simulator: TrunkSimulator, policy = None, num_rollouts: int = 1, initial_state: Optional[Tuple[np.ndarray, np.ndarray]] = None, duration_s: float = 1.0, timestep_ms: float = 10, render_video: bool = False, video_filename: Optional[str] = "render.mpy"):
+def rollout(data: TrunkData,
+            simulator: TrunkSimulator,
+            policy: TrunkPolicy = None,
+            num_rollouts: int = 1,
+            initial_state: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+            duration: float = 1.0,  # [s]
+            render_video: bool = False,
+            framerate: int = 30,  # [Hz]
+            video_filename: Optional[str] = "trunk_render.mpy"):
     """
-    Rollout a policy on a simulator.
+    Rollout a policy on a simulator and save it inside a data object.
     """
-
-    #TODO: Apply num_rollouts, but how do we handle data and initial_state?
-
-    simulator.reset()
-    simulator.set_state(*initial_state)
-    data = None #TODO: Hugo
-    
-    if render_video:
-        frames = []
-        framerate_hz = int(1.0/timestep_ms) # TODO: Make independent of timestep_ms
-
-        with mujoco.Renderer(simulator.model) as renderer:
-            while simulator.data.time < duration_s:
-                single_pass(simulator, policy, data)
-                renderer.update_scene(simulator.data)
-                pixels = renderer.render()
-                frames.append(pixels)
-
-        media.write_video(video_filename, frames, fps=framerate_hz)
+    # TODO: perhaps you just want a single rollout here because you probably want diverse initial states
+    # Also, currently we would save many videos if render_video is True to the same file
+    for _ in range(num_rollouts):
+        simulator.reset()
+        if initial_state is not None:
+            simulator.set_state(*initial_state)
+        state = simulator.get_state()
+        converged = False
         
-    else:
-        while simulator.data.time < duration_s:
-            single_pass(simulator, policy, data)
+        if render_video:
+            frames = []
 
+            with mujoco.Renderer(simulator.model) as renderer:
+                while simulator.data.time < duration and not converged:
+                    control_input = policy(state)
+                    t, state_new, converged = simulator.step(control_input)
+                    data.add_data(t, state, control_input)
+                    
+                    # Rendering
+                    renderer.update_scene(simulator.data)
+                    pixels = renderer.render()
+                    frames.append(pixels)
 
-def single_pass(simulator: TrunkSimulator, policy, data):
-    states = simulator.get_states()
-    #u = set_control_input(policy(states)) #TODO: Hugo
-    simulator.step(u)
-    new_state = simulator.get_states()
-    #data.append(simulator.get_states())
+                    # Update state
+                    state = state_new
+
+            media.write_video(video_filename, frames, fps=framerate)
+            
+        else:
+            while simulator.data.time < duration and not converged:
+                control_input = policy(state)
+                t, state_new, converged = simulator.step(control_input)
+                data.add_data(t, state, control_input)
+
+                # Update state
+                state = state_new

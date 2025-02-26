@@ -38,7 +38,7 @@ class TrunkData:
         self.control_cols = [f"u{axis}{link}" for link in links for axis in ["x", "y"]]
 
         self.state_dim = len(self.state_cols)
-        self.controls_dim = len(self.control_cols)
+        self.control_dim = len(self.control_cols)
         
         # Initialize an empty DataFrame
         self.data = pd.DataFrame()
@@ -54,7 +54,7 @@ class TrunkData:
         """
         # Check dimensions
         assert len(x) == self.state_dim, f"Expected state dimension {self.state_dim}, got {len(x)}"
-        assert len(u) == self.controls_dim, f"Expected input dimension {self.controls_dim}, got {len(u)}"
+        assert len(u) == self.control_dim, f"Expected input dimension {self.control_dim}, got {len(u)}"
             
         # Create a new row
         row_data = {self.time_col: t}
@@ -76,7 +76,7 @@ class TrunkData:
         Args:
             t_batch: Array of time values of shape (batch_size,)
             x_batch: Array of state vectors of shape (batch_size, state_dim)
-            u_batch: Array of input vectors of shape (batch_size, controls_dim)
+            u_batch: Array of input vectors of shape (batch_size, control_dim)
         """
         t_batch = np.array(t_batch).flatten()
         x_batch = np.array(x_batch)
@@ -130,7 +130,7 @@ class TrunkData:
         self.control_cols = [col for col in cols if col.startswith('u')]
         
         self.state_dim = len(self.state_cols)
-        self.controls_dim = len(self.control_cols)
+        self.control_dim = len(self.control_cols)
     
     def convert_to_torch_dataset(self, 
                                 input_cols: Optional[List[str]] = None, 
