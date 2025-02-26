@@ -1,7 +1,7 @@
 import argparse
 import os
 
-os.environ["MUJOCO_GL"] = "egl"  # Avoids issues with GBM on Linux TODO: Patrick
+os.environ["MUJOCO_GL"] = "egl"  # Avoids issues with GLFWError on Linux TODO: Patrick
 
 from trunk_sim.simulator import TrunkSimulator, get_model_path
 from trunk_sim.rollout import rollout

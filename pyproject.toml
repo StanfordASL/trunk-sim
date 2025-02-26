@@ -17,4 +17,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.1.0",
+    "ipykernel>=6.29.5",
+    "pytest>=8.3.4",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ['src']
+
+[tool.uv]
+package = true

@@ -38,6 +38,7 @@ def rollout(simulator: TrunkSimulator, policy = None, num_rollouts: int = 1, ini
 
 def single_pass(simulator: TrunkSimulator, policy, data):
     states = simulator.get_states()
-    #simulator.set_control_input(policy(states)) #TODO: Hugo
-    simulator.step()
+    #u = set_control_input(policy(states)) #TODO: Hugo
+    simulator.step(u)
+    new_state = simulator.get_states()
     #data.append(simulator.get_states())
