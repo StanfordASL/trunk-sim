@@ -178,3 +178,6 @@ set_venv.sh
 
 # Visual Studio Code
 .vscode/
+
+# Mujoco files
+MUJOCO_LOG.TXT
