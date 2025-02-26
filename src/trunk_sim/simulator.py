@@ -39,7 +39,7 @@ class TrunkSimulator:
         mujoco.mj_kinematics(self.model, self.data) #TODO: Verify if this is necessary
         
 
-    def set_state(self, qpos, qvel):
+    def set_state(self, qpos = None, qvel = None):
         if qpos is not None:
             self.data.qpos[:] = qpos
         if qvel is not None:
