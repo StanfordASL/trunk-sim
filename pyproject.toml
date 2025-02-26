@@ -1,8 +1,9 @@
 [project]
 name = "trunk-sim"
 version = "0.1.0"
-description = "Add your description here"
+description = "ASL Trunk simulator"
 readme = "README.md"
+keywords = ["trunk", "simulator", "robotics"]
 requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.10.0",
