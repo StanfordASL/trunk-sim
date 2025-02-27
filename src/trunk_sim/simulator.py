@@ -3,6 +3,7 @@ from typing import Optional
 import numpy as np
 import mediapy as media
 
+from trunk_sim.generate_trunk_model import generate_trunk_model
 
 def get_model_path(model_type: Optional[str] = "default") -> str:
     if model_type == "default":
@@ -21,7 +22,7 @@ def render_simulator(simulator):
         media.show_image(renderer.render())
 
 
-class TrunkSimulator:
+class Simulator:
     def __init__(
         self,
         model_path: Optional[str] = None,
@@ -75,3 +76,7 @@ class TrunkSimulator:
 
     def set_control_input(self, control_input):
         pass
+
+class TrunkSimulator(Simulator):
+    def __init__(self, n_links: int = 100, payload_mass: float = 0.1, timestep: Optional[float] = 0.01):
+        super().__init__(model_xml=generate_trunk_model(n_links=n_links, payload_mass=payload_mass), timestep=timestep)
