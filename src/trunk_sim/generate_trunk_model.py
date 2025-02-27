@@ -9,21 +9,22 @@ def payload_body(mass=0.1, size=0.1):
         </body>
     '''
 
-def link(index, inner="", size=0.01, radius=0.005, density=0.1, damping=0.25, armature=0.01):
+def link(index, inner="", size=0.1, radius=0.05, density=0.1, damping=10.0, armature=0.1, stiffness=10.0, joint=True):
     assert size > radius, "Size must be greater than radius"
+    joint_str = f'<joint name="joint_{index}" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="{armature}" damping="{damping}" stiffness="{stiffness}"/>' if joint else ""
     return f'''
         <body name="link_{index}" pos="{size} 0 0">
-            <joint name="joint_{index}" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="{armature}" damping="{damping}"/>
+            {joint_str}
             <geom name="geom_{index}" size="{radius} {radius}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="{GEOM_COLOR}"/>
-            <!--<site name="site_{index}_y_front" pos="0 {radius} 0"/> 
-            <site name="site_{index}_y_back" pos="0 -{radius} 0"/>
-            <site name="site_{index}_z_front" pos="0 0 {radius}"/> 
-            <site name="site_{index}_z_back" pos="0 0 -{radius}"/>-->
+            <site name="site_y_front_{index}" pos="0 {radius} 0"/> 
+            <site name="site_y_back_{index}" pos="0 -{radius} 0"/>
+            <site name="site_z_front_{index}" pos="0 0 {radius}"/> 
+            <site name="site_z_back_{index}" pos="0 0 -{radius}"/>
             {inner}
         </body>
     '''
 
-def tendon(name, site_names, stiffness=0.0, damping=0.0, width=0.002):
+def tendon(name, site_names, stiffness=0.0, damping=1.0, width=0.002):
     sites = [f'<site site="{site_name}"/>' for site_name in site_names]
     return f'''
         <tendon>
@@ -34,7 +35,7 @@ def tendon(name, site_names, stiffness=0.0, damping=0.0, width=0.002):
     '''
 
 def muscle(tendon_name):
-    return f''' <muscle tendon="{tendon_name}"/> '''
+    return f'''<muscle tendon="{tendon_name}"/> '''
 
 def base(bodies, tendons="", muscles=""):
     return f'''
@@ -77,10 +78,16 @@ def generate_trunk_model(n_links=100, payload_mass=0.1):
     for i in range(n_links, 0, -1):
         bodies_string = link(i, inner=bodies_string)
 
-    tendons_string = tendon("tendon_y_front", [f"site_{i}_y_front" for i in range(1, n_links + 1)])
-    muscles_string = muscle("tendon_y_front")
+    bodies_string = link(0, inner=bodies_string, joint=False)
 
-    return base(bodies_string)
+    tendons_string = ""
+    muscles_string = ""
+    for position in ["y_front", "y_back", "z_front", "z_back"]:
+        tendons_string += tendon(f"tendon_{position}", [f"site_{position}_{i}" for i in range(0, n_links + 1)])
+
+        muscles_string += muscle(f"tendon_{position}")
+
+    return base(bodies_string, tendons=tendons_string, muscles=muscles_string)
 
 
 if __name__ == "__main__":

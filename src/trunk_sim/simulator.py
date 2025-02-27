@@ -5,6 +5,7 @@ import mediapy as media
 
 from trunk_sim.generate_trunk_model import generate_trunk_model
 
+
 def get_model_path(model_type: Optional[str] = "default") -> str:
     if model_type == "default":
         return "src/trunk_sim/models/cable_trunk_expanded_old_4_tendons.xml"
@@ -61,22 +62,49 @@ class Simulator:
             self.data.qvel[:] = qvel
 
     def step(self, control_input=None):
+        self.set_control_input(control_input)
         for i in range(self.sim_steps):
             mujoco.mj_step(self.model, self.data)
 
         return self.data.time, self.get_states()
 
-    def has_converged():
-        pass
+    def has_converged(self, threshold=1e-6):
+        if self.prev_states is None:
+            self.prev_states = self.get_states()
+            return False
+        if np.linalg.norm(self.prev_states - self.get_states()) < threshold:
+            return True
+        else:
+            return False
 
     def get_states(self):
         return np.array(
             [self.data.body(b).xpos.copy().tolist() for b in range(1, self.model.nbody)]
         )
 
-    def set_control_input(self, control_input):
-        pass
+    def set_control_input(self, control_input=None):
+        if control_input is not None:
+            self.data.ctrl[:] = control_input
+        else:
+            self.data.ctrl[:] = 0
+
 
 class TrunkSimulator(Simulator):
-    def __init__(self, n_links: int = 100, payload_mass: float = 0.1, timestep: Optional[float] = 0.01):
-        super().__init__(model_xml=generate_trunk_model(n_links=n_links, payload_mass=payload_mass), timestep=timestep)
+    def __init__(
+        self,
+        n_links: int = 100,
+        payload_mass: float = 0.1,
+        timestep: Optional[float] = 0.01,
+    ):
+        super().__init__(
+            model_xml=generate_trunk_model(n_links=n_links, payload_mass=payload_mass),
+            timestep=timestep,
+        )
+
+        self.B = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]]) # Mapping from control input to actuators
+
+    def set_control_input(self, control_input=None):
+        if control_input is not None:
+            self.data.ctrl[:] = self.B @ control_input
+        else:
+            self.data.ctrl[:] = 0
