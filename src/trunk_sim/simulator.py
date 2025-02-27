@@ -50,6 +50,7 @@ class Simulator:
             self.sim_steps = int(self.sim_steps)
 
         self.reset()
+        self.prev_states = self.get_states()
 
     def reset(self):
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
@@ -66,12 +67,9 @@ class Simulator:
         for i in range(self.sim_steps):
             mujoco.mj_step(self.model, self.data)
 
-        return self.data.time, self.get_states()
+        return self.data.time, self.get_states(), self.has_converged()
 
     def has_converged(self, threshold=1e-6):
-        if self.prev_states is None:
-            self.prev_states = self.get_states()
-            return False
         if np.linalg.norm(self.prev_states - self.get_states()) < threshold:
             return True
         else:
@@ -92,15 +90,15 @@ class Simulator:
 class TrunkSimulator(Simulator):
     def __init__(
         self,
-        n_links: int = 100,
-        payload_mass: float = 0.1,
+        n_links: int = 20,
+        payload_mass: float = 0.5,
         timestep: Optional[float] = 0.01,
     ):
         super().__init__(
             model_xml=generate_trunk_model(n_links=n_links, payload_mass=payload_mass),
             timestep=timestep,
         )
-
+        self.n_controls = 2 # TODO: Make argument in init
         self.B = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]]) # Mapping from control input to actuators
 
     def set_control_input(self, control_input=None):

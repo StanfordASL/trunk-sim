@@ -15,7 +15,7 @@ def rollout(simulator: TrunkSimulator,
             duration: float = 1.0,  # [s]
             render_video: bool = False,
             framerate: int = 30,  # [Hz]
-            video_filename: Optional[str] = "trunk_render.mpy",
+            video_filename: Optional[str] = "trunk_render.mp4",
             stop_at_convergence: bool = False) -> None:
     """
     Rollout a policy on a simulator and save it inside a data object.
@@ -30,7 +30,7 @@ def rollout(simulator: TrunkSimulator,
         with mujoco.Renderer(simulator.model) as renderer:
             while simulator.data.time < duration and (not stop_at_convergence or not converged):
                 rollout_step(simulator, policy, data)
-                
+
                 # Rendering
                 renderer.update_scene(simulator.data)
                 pixels = renderer.render()
@@ -49,7 +49,7 @@ def rollout_step(simulator: TrunkSimulator,
     """
     Perform a single step of a rollout.
     """
-    state = simulator.get_state()
+    state = simulator.get_states()
     control_input = policy(state) if policy is not None else None
         
     t, _, converged = simulator.step(control_input)
