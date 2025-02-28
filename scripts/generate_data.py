@@ -5,22 +5,23 @@ from tqdm import tqdm
 
 os.environ["MUJOCO_GL"] = "egl"  # Avoids issues with GLFWError on Linux TODO: Patrick
 
-from trunk_sim.simulator import TrunkSimulator, get_model_path
+from trunk_sim.simulator import TrunkSimulator
 from trunk_sim.data import TrunkData
 from trunk_sim.policy import TrunkPolicy
 from trunk_sim.rollout import rollout
 
 
 def main(args):
+    # simulator = TrunkSimulator(num_links=3, body_density=1, tip_mass=1)
     simulator = TrunkSimulator()
-    #data = TrunkData(states="pos_vel", links=[1, 2, 3])
+    data = TrunkData(states="pos_vel", links=[1, 2, 3], num_links=simulator.num_links)
     policy = TrunkPolicy(lambda _: np.random.randn(simulator.n_controls))
 
     if args.render_video and not os.path.exists(args.video_dir):
         os.makedirs(args.video_dir)
 
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
-        #initial_state = simulator.get_random_state()
+        # initial_state = simulator.get_random_state()
         rollout(
             simulator=simulator,
             policy=policy,
@@ -31,7 +32,7 @@ def main(args):
             video_filename=args.video_dir + f"rollout_{rollout_idx}.mp4",
         )
 
-    #data.save_to_csv(args.data_filename)
+    data.save_to_csv(args.data_filename)
 
 def parse_args():
     parser = argparse.ArgumentParser()
