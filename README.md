@@ -9,6 +9,14 @@ The ASL Trunk simulator is a tool designed to simulate the dynamics of a trunk s
 - Create PyTorch datasets for machine learning
 - Visualize and evaluate policies in simulation
 
+## Installation
+
+Install directly from PyPI:
+
+```bash
+pip install trunk-sim
+```
+
 ## Usage
 
 ### Generating Data
@@ -18,6 +26,8 @@ To generate simulation data, run:
 ```bash
 uv run scripts/generate_data.py --render_video
 ```
+
+## Contribute
 
 ### Running Tests
 
