@@ -12,7 +12,7 @@ class TrunkData:
     Stores simulation data with time, states, and inputs in a pandas DataFrame.
     Provides functionality to save as CSV and convert to PyTorch dataset.
     """
-    def __init__(self, states: str = "pos", links: List = [3], num_links: int = 3):
+    def __init__(self, states: str = "pos", links: List = [3], num_links: int = 3, num_segments: int = 3):
         """
         Initialize a TrunkData object.
         
@@ -24,6 +24,7 @@ class TrunkData:
         self.states = states
         self.links = links
         self.num_links = num_links
+        self.num_segments = num_segments
         self.link_idx = [link - 1 for link in links]
         
         # Column name patterns
@@ -56,14 +57,15 @@ class TrunkData:
         
         Args:
             t: Time value
-            x: State vector of shape (num_links, 6 * num_links)
-            u: Input vector of shape (num_links, 2 * num_links)
-            x_new: Next state vector of shape (num_links, 6 * num_links)
+            x: State vector of shape (num_links, 6)
+            u: Input vector of shape (num_links, 2)
+            x_new: Next state vector of shape (num_links, 6)
         """
+
         # Check dimensions
-        assert len(x.flatten()) == 6 * self.num_links, f"Expected state dimension {self.state_dim}, got {len(x)}"
-        assert len(u.flatten()) == 2 * self.num_links, f"Expected input dimension {self.control_dim}, got {len(u)}"
-        assert len(x_new.flatten()) == 6 * self.num_links, f"Expected next state dimension {self.state_dim}, got {len(x_new)}"
+        assert x.shape == (self.num_links, 6), f"Expected state shape {(self.num_links, 6)}, got {x.shape}"
+        assert u.shape == (self.num_segments, 2), f"Expected input shape {(self.num_segments, 2)}, got {u.shape}"
+        assert x_new.shape == (self.num_links, 6), f"Expected next state shape {(self.num_links, 6)}, got {x_new.shape}"
 
         # Subselect the desired states
         if self.states == "pos":
@@ -72,6 +74,8 @@ class TrunkData:
         elif self.states == "vel":
             x = x[:, 3:]
             x_new = x_new[:, 3:]
+        elif self.states == "pos_vel":
+            pass
 
         # Subselect the desired links
         x = x[self.link_idx].flatten()

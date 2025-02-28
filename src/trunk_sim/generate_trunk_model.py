@@ -1,7 +1,6 @@
 GEOM_COLOR = "0 0 0 1"
 PAYLOAD_COLOR = "0 1 0 1"
 
-# TODO: Check if compositeactuated plugin is even necessary
 def payload_body(mass=0.1, size=0.1):
     return f'''
         <body name="payload" pos="{size} 0 0">
@@ -61,10 +60,7 @@ def base(bodies, tendons="", muscles="", contacts=""):
 
         <worldbody>
             <light pos="0 -1 -1" dir="0 -1 -1" diffuse="1 1 1"/>
-            <body name="actuatedB_first" pos="0 0 0.7" quat="0 -0.707107 0 0.707107">
-                <geom name="actuatedG0" size="0.005 0.005" pos="0.005 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.8 0.2 0.1 1"/>
-                {bodies}
-            </body>
+            {bodies}
         </worldbody>
 
         {tendons}
@@ -80,12 +76,11 @@ def base(bodies, tendons="", muscles="", contacts=""):
     </mujoco>
     '''
 
-def generate_trunk_model(n_links=10, payload_mass=0.1):
-    bodies_string = payload_body(mass=payload_mass) if payload_mass > 0 else ""
+def generate_trunk_model(num_links=10, tip_mass=0.1, radius=0.0025, length=0.32):
+    bodies_string = payload_body(mass=tip_mass) if tip_mass > 0 else ""
 
-    radius = 0.025
-    size = 0.3/n_links
-    for i in range(n_links, 0, -1):
+    size = length/num_links
+    for i in range(num_links, 0, -1):
         bodies_string = link(i, inner=bodies_string, size=size, radius=radius)
 
     bodies_string = link(0, inner=bodies_string, joint=False, size=size, radius=radius)
@@ -93,16 +88,10 @@ def generate_trunk_model(n_links=10, payload_mass=0.1):
     tendons_string = ""
     muscles_string = ""
     for position in ["y_front", "y_back", "z_front", "z_back"]:
-        tendons_string += tendon(f"tendon_{position}", [f"site_{position}_{i}" for i in range(0, n_links + 1)])
+        tendons_string += tendon(f"tendon_{position}", [f"site_{position}_{i}" for i in range(0, num_links + 1)])
 
         muscles_string += muscle(f"tendon_{position}")
 
-    contacts = "\n".join([contact(f"link_{i}", f"link_{i+1}") for i in range(0, n_links)])
+    contacts = "\n".join([contact(f"link_{i}", f"link_{i+1}") for i in range(0, num_links)])
 
     return base(bodies_string, tendons=tendons_string, muscles=muscles_string, contacts=contacts)
-
-
-if __name__ == "__main__":
-    model_xml = generate_trunk_model(n_links=10, payload_mass=0.0)
-    with open("trunk.xml", "w") as f:
-        f.write(model_xml)

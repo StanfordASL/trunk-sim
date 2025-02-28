@@ -22,14 +22,13 @@ def rollout(simulator: TrunkSimulator,
     """
 
     simulator.reset_time()
-    converged = False
     
     if render_video:
         frames = []
 
         with mujoco.Renderer(simulator.model) as renderer:
-            while simulator.data.time < duration and (not stop_at_convergence or not converged):
-                converged = rollout_step(simulator, policy, data)
+            while simulator.data.time < duration and (not stop_at_convergence or not simulator.has_converged()):
+                rollout_step(simulator, policy, data)
 
                 # Rendering
                 renderer.update_scene(simulator.data)
@@ -39,8 +38,8 @@ def rollout(simulator: TrunkSimulator,
         media.write_video(video_filename, frames, fps=framerate)
         
     else:
-        while simulator.data.time < duration and (not stop_at_convergence or not converged):
-            converged = rollout_step(simulator, policy, data)
+        while simulator.data.time < duration and (not stop_at_convergence or not simulator.has_converged()):
+            rollout_step(simulator, policy, data)
 
 
 def rollout_step(simulator: TrunkSimulator,
@@ -53,9 +52,7 @@ def rollout_step(simulator: TrunkSimulator,
     t = simulator.get_time()
     control_input = policy(t, state) if policy is not None else None
         
-    t, _, converged = simulator.step(control_input)
+    t, x, u, x_new = simulator.step(control_input)
 
     if data is not None:
-        data.add_data(t, state.T, control_input)
-
-    return converged
+        data.add_data(t, x, u, x_new)

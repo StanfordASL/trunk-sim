@@ -3,36 +3,39 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 
-os.environ["MUJOCO_GL"] = "egl"  # Avoids issues with GLFWError on Linux TODO: Patrick
 
 from trunk_sim.simulator import TrunkSimulator
 from trunk_sim.data import TrunkData
-from trunk_sim.policy import TrunkPolicy
+from trunk_sim.policy import TrunkPolicy, HarmonicPolicy
 from trunk_sim.rollout import rollout
 
 
 def main(args):
-    # simulator = TrunkSimulator(num_links=3, body_density=1, tip_mass=1)
-    simulator = TrunkSimulator()
-    data = TrunkData(states="pos_vel", links=[1, 2, 3], num_links=simulator.num_links)
-    policy = TrunkPolicy(lambda _: np.random.randn(simulator.n_controls))
+    simulator = TrunkSimulator(num_segments=1, num_links_per_segment=10, tip_mass=args.tip_mass)
+    data = TrunkData(states="pos_vel", links=[1, 2, 3], num_links=simulator.num_links, num_segments=simulator.num_segments)
+    policy = None #HarmonicPolicy(frequency=1.0, amplitude=1.0, phase=0.0, num_segments=simulator.num_segments)
 
-    if args.render_video and not os.path.exists(args.video_dir):
-        os.makedirs(args.video_dir)
+    if not os.path.exists(args.data_folder):
+        os.makedirs(args.data_folder)
+
+    if args.render_video and not os.path.exists(os.path.join(args.data_folder, "videos")):
+        os.makedirs(os.path.join(args.data_folder, "videos"))
 
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
-        # initial_state = simulator.get_random_state()
+
+        simulator.set_initial_steady_state(steady_state_control_input=np.ones((simulator.num_segments, simulator.num_controls_per_segment)), max_duration=10)
+
         rollout(
             simulator=simulator,
             policy=policy,
-            data=None,
+            data=data,
             initial_state=None,
             duration=args.duration,
             render_video=args.render_video,
-            video_filename=args.video_dir + f"rollout_{rollout_idx}.mp4",
+            video_filename=args.data_folder + f"rollout_{rollout_idx}.mp4",
         )
 
-    data.save_to_csv(args.data_filename)
+    data.save_to_csv(os.path.join(args.data_folder, "data.csv"))
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -50,16 +53,22 @@ def parse_args():
         "--render_video", action="store_true", help="Render video of the rollout."
     )
     parser.add_argument(
-        "--video_dir",
+        "--data_folder",
         type=str,
-        default="trunk_videos/",
+        default="trunk_data/",
         help="Directory of the rendered video.",
     )
     parser.add_argument(
-        "--data_filename",
-        type=str,
-        default="data.csv",
-        help="Filename to save the data.",
+        "--tip_mass",
+        type=float,
+        default=0.1,
+        help="Mass of the trunk tip.",
+    )
+    parser.add_argument(
+        "--num_segments",
+        type=int,
+        default=3,
+        help="Number of segments in the trunk"
     )
     return parser.parse_args()
 

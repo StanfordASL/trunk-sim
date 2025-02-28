@@ -59,13 +59,13 @@ class HarmonicPolicy(TrunkPolicy):
     """
     Simple periodic policy that returns a constant control input.
     """
-    def __init__(self, frequency=1.0, amplitude=1.0, phase=0.0):
+    def __init__(self, frequency=1.0, amplitude=1.0, phase=0.0, num_segments=3):
         """
         Initialize the policy with a given discrete-time frequency and amplitude.
         """
         self.frequency = frequency
         self.amplitude = amplitude
         self.phase = phase
-        self.policy = lambda t, _: amplitude * np.array([np.sin(2 * np.pi * frequency * t + self.phase), np.cos(2 * np.pi * frequency * t + self.phase)])
+        self.policy = lambda t, _: amplitude * np.array([np.sin(2 * np.pi * frequency * t + self.phase), np.cos(2 * np.pi * frequency * t + self.phase)] * num_segments)
 
         super().__init__(self.policy)
