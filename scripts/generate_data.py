@@ -12,7 +12,7 @@ from trunk_sim.rollout import rollout
 
 def main(args):
     simulator = TrunkSimulator(num_segments=1, num_links_per_segment=10, tip_mass=args.tip_mass)
-    data = TrunkData(states="pos_vel", links=[1, 2, 3], num_links=simulator.num_links, num_segments=simulator.num_segments)
+    data = TrunkData(simulator.num_links_per_segment, simulator.num_segments, states="pos_vel", segments="all")
     policy = None #HarmonicPolicy(frequency=1.0, amplitude=1.0, phase=0.0, num_segments=simulator.num_segments)
 
     if not os.path.exists(args.data_folder):

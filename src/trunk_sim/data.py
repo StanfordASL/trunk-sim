@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 
 
 class TrunkData:
@@ -12,15 +12,33 @@ class TrunkData:
     Stores simulation data with time, states, and inputs in a pandas DataFrame.
     Provides functionality to save as CSV and convert to PyTorch dataset.
     """
-    def __init__(self, states: str = "pos", links: List = [3], num_links: int = 3, num_segments: int = 3):
+    def __init__(self, num_links_per_segment: int, num_segments: int, states: str = "pos", segments: Optional[Union[List, str]] = None, links: Optional[Union[List,str]] = None):
         """
         Initialize a TrunkData object.
         
         Args:
+            num_links_per_segment: number of links in each segment
+            num_segments: number of segments in the system
             states: states to be saved ("pos", "vel", "pos_vel")
-            links: links to be included in the dataset, starting from 1
-            num_links: total number of links in the system
+            segments: segments to be included in the dataset, possibilities are "all", "tip" or a list of segment indices
+            links: links to be included in the dataset, possibilities are "all" or a list of link indices. Segments and links cannot be specified at the same time.
         """
+        num_links = num_links_per_segment * num_segments
+
+        if segments is not None and links is not None:
+            raise ValueError("Cannot specify both segments and links.")
+        
+        if links is not None:
+            if links == "all":
+                links = list(range(1, num_links + 1))
+        else:
+            if segments is None or segments == "tip":
+                links = [num_links]
+            elif segments == "all":
+                links = list(range(num_links_per_segment, num_links+1, num_links_per_segment))
+            else:
+                links = [num_links_per_segment * segment for segment in segments]
+
         self.states = states
         self.links = links
         self.num_links = num_links
