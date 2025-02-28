@@ -4,6 +4,50 @@ import torch
 from torch.utils.data import Dataset
 from typing import List, Tuple, Optional, Union
 
+def get_column_names(
+    num_segments: int, states: str, links: List[int]
+) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Get column names for states, new states, and control inputs.
+    """
+
+    if states == "pos":
+        state_cols = [
+            f"{axis}{link}" for link in links for axis in ["x", "y", "z"]
+        ]
+        state_new_cols = [
+            f"{axis}{link}_new" for link in links for axis in ["x", "y", "z"]
+        ]
+    elif states == "vel":
+        state_cols = [
+            f"{axis}{link}" for link in links for axis in ["vx", "vy", "vz"]
+        ]
+        state_new_cols = [
+            f"{axis}{link}_new" for link in links for axis in ["vx", "vy", "vz"]
+        ]
+    elif states == "pos_vel":
+        state_cols = [
+            f"{axis}{link}"
+            for link in links
+            for axis in ["x", "y", "z", "vx", "vy", "vz"]
+        ]
+        state_new_cols = [
+            f"{axis}{link}_new"
+            for link in links
+            for axis in ["x", "y", "z", "vx", "vy", "vz"]
+        ]
+    else:
+        raise ValueError(f"Invalid states specification: {states}")
+
+    # All control inputs are saved
+    control_cols = [
+        f"u{axis}{segment}"
+        for segment in range(1, num_segments + 1)
+        for axis in ["x", "y"]
+    ]
+
+    return state_cols, state_new_cols, control_cols
+
 
 class TrunkData:
     """
@@ -58,41 +102,10 @@ class TrunkData:
         # Column name patterns
         self.time_col = "t"
 
-        if self.states == "pos":
-            self.state_cols = [
-                f"{axis}{link}" for link in links for axis in ["x", "y", "z"]
-            ]
-            self.state_new_cols = [
-                f"{axis}{link}_new" for link in links for axis in ["x", "y", "z"]
-            ]
-        elif self.states == "vel":
-            self.state_cols = [
-                f"{axis}{link}" for link in links for axis in ["vx", "vy", "vz"]
-            ]
-            self.state_new_cols = [
-                f"{axis}{link}_new" for link in links for axis in ["vx", "vy", "vz"]
-            ]
-        elif self.states == "pos_vel":
-            self.state_cols = [
-                f"{axis}{link}"
-                for link in links
-                for axis in ["x", "y", "z", "vx", "vy", "vz"]
-            ]
-            self.state_new_cols = [
-                f"{axis}{link}_new"
-                for link in links
-                for axis in ["x", "y", "z", "vx", "vy", "vz"]
-            ]
-        else:
-            raise ValueError(f"Invalid states specification: {self.states}")
-
-        # All control inputs are saved
-        self.control_cols = [
-            f"u{axis}{link}"
-            for link in range(1, self.num_links + 1)
-            for axis in ["x", "y"]
-        ]
-
+        self.state_cols, self.state_new_cols, self.control_cols = get_column_names(
+            num_segments, states, links
+        )
+        
         self.state_dim = len(self.state_cols)
         self.control_dim = len(self.control_cols)
 
@@ -325,9 +338,14 @@ class TrunkTorchDataset(Dataset):
             raise ValueError("Must provide either a DataFrame or a CSV file.")
         
         self.time_col = "t"
-        self.state_cols = [key for key in self.dataframe.keys() if key.startswith("x") and not key.endswith("new")]
-        self.control_cols = [key for key in self.dataframe.keys() if key.startswith("u")]
-        self.state_new_cols = [key for key in self.dataframe.keys() if key.startswith("x") and key.endswith("new")]
+
+        #TODO: Currently infering from dataframe, should be passed as argument or metadata file.
+        self.num_links = len([key for key in self.dataframe.keys() if key.startswith("x") and not key.endswith("_new")])
+        self.num_segments = len([key for key in self.dataframe.keys() if key.startswith("ux")])
+
+        self.state_cols, self.state_new_cols, self.control_cols = get_column_names(
+            self.num_segments, "pos_vel", list(range(1, self.num_links + 1))
+        )
 
     def __len__(self) -> int:
         """Return the number of data points."""
@@ -354,8 +372,8 @@ class TrunkTorchDataset(Dataset):
 
         # Convert to PyTorch tensors
         t = torch.tensor(t, dtype=torch.float32)
-        x = torch.tensor(states, dtype=torch.float32)
+        x = torch.tensor(states, dtype=torch.float32).reshape(self.num_links, -1)
         u = torch.tensor(controls, dtype=torch.float32)
-        x_new = torch.tensor(next_states, dtype=torch.float32)
+        x_new = torch.tensor(next_states, dtype=torch.float32).reshape(self.num_links, -1)
 
         return {"t": t, "x": x, "u": u, "x_new": x_new}

@@ -56,7 +56,7 @@ def main(args):
             video_filename=os.path.join(
                 args.data_folder, "videos", f"rollout_{rollout_idx}.mp4"
             ),
-            stop_at_convergence=False
+            stop_at_convergence=True
         )
 
     data.save_to_csv(os.path.join(args.data_folder, "data.csv"))

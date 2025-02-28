@@ -81,7 +81,7 @@ class Simulator:
 
         return t, x, u, x_new
 
-    def has_converged(self, threshold=1e-6):
+    def has_converged(self, threshold=1e-3):
         if self.prev_states is None:
             self.prev_states = self.get_states()
             return False
