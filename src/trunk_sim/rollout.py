@@ -11,7 +11,6 @@ from trunk_sim.data import TrunkData
 def rollout(simulator: TrunkSimulator,
             policy: Optional[TrunkPolicy] = None,
             data: Optional[TrunkData] = None,
-            initial_state: Optional[Tuple[np.ndarray, np.ndarray]] = None,
             duration: float = 1.0,  # [s]
             render_video: bool = False,
             framerate: int = 30,  # [Hz]

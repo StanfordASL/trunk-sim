@@ -60,7 +60,10 @@ def base(bodies, tendons="", muscles="", contacts=""):
 
         <worldbody>
             <light pos="0 -1 -1" dir="0 -1 -1" diffuse="1 1 1"/>
-            {bodies}
+            <body name="actuatedB_first" pos="0 0 0.7" quat="0 -0.707107 0 0.707107">
+                <geom name="actuatedG0" size="0.005 0.005" pos="0.005 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.8 0.2 0.1 1"/>
+                {bodies}
+            </body>
         </worldbody>
 
         {tendons}
@@ -76,7 +79,7 @@ def base(bodies, tendons="", muscles="", contacts=""):
     </mujoco>
     '''
 
-def generate_trunk_model(num_links=10, tip_mass=0.1, radius=0.0025, length=0.32):
+def generate_trunk_model(num_links=10, tip_mass=0.1, radius=0.025, length=0.32):
     bodies_string = payload_body(mass=tip_mass) if tip_mass > 0 else ""
 
     size = length/num_links

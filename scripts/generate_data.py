@@ -29,10 +29,9 @@ def main(args):
             simulator=simulator,
             policy=policy,
             data=data,
-            initial_state=None,
             duration=args.duration,
             render_video=args.render_video,
-            video_filename=args.data_folder + f"rollout_{rollout_idx}.mp4",
+            video_filename=os.path.join(args.data_folder, "videos", f"rollout_{rollout_idx}.mp4")
         )
 
     data.save_to_csv(os.path.join(args.data_folder, "data.csv"))

@@ -90,7 +90,7 @@ class Simulator:
             return False
 
     def get_states(self):
-        positions = np.array([self.data.body(b).xpos.copy().tolist() for b in range(3, self.model.nbody)])
+        positions = np.array([self.data.body(b).xpos.copy().tolist() for b in range(4, self.model.nbody)])
         # TODO: Add velocities, for now zeros
         velocities = np.zeros_like(positions)
         return np.concatenate([positions, velocities], axis=1)
