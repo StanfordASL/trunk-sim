@@ -15,13 +15,13 @@ def link(
     inner="",
     size=0.1,
     radius=0.005,
-    density=0.1,
-    damping=0.25,
+    density=0.01,
+    damping=1.0,
     armature=0.01,
-    stiffness=1.0,
+    stiffness=20.0,
     joint=True,
 ):
-    assert size > radius, "Size must be greater than radius"
+    #assert size > radius, "Size must be greater than radius"
     joint_str = (
         f'<joint name="joint_{index}" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="{armature}" damping="{damping}" stiffness="{stiffness}"/>'
         if joint

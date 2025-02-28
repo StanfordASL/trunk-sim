@@ -38,6 +38,7 @@ def rollout(
                 pixels = renderer.render()
                 frames.append(pixels)
 
+        assert len(frames) > 0, "No frames were rendered. Simulation may have been too short."
         media.write_video(video_filename, frames, fps=framerate)
 
     else:

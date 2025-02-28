@@ -6,13 +6,13 @@ from tqdm import tqdm
 
 from trunk_sim.simulator import TrunkSimulator
 from trunk_sim.data import TrunkData
-from trunk_sim.policy import TrunkPolicy, HarmonicPolicy
+from trunk_sim.policy import TrunkPolicy, HarmonicPolicy, steady_state_input
 from trunk_sim.rollout import rollout
 
 
 def main(args):
     simulator = TrunkSimulator(
-        num_segments=1, num_links_per_segment=10, tip_mass=args.tip_mass
+        num_segments=args.num_segments, tip_mass=args.tip_mass
     )
     data = TrunkData(
         simulator.num_links_per_segment,
@@ -20,9 +20,16 @@ def main(args):
         states="pos_vel",
         links="all",
     )
-    policy = HarmonicPolicy(
-        frequency=1.0, amplitude=0.2, phase=0.0, num_segments=simulator.num_segments
-    )
+
+    # Define control policy
+    if args.policy == "harmonic":
+        policy = HarmonicPolicy(
+            frequency=1.0, amplitude=np.random.rand(), phase=np.random.uniform(0,2*np.pi), num_segments=simulator.num_segments
+        )
+    elif args.policy == "none":
+        policy = None
+    else:
+        raise ValueError(f"Invalid control input: {args.control_input}")
 
     if not os.path.exists(args.data_folder):
         os.makedirs(args.data_folder)
@@ -33,13 +40,10 @@ def main(args):
         os.makedirs(os.path.join(args.data_folder, "videos"))
 
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
-
+        angle = np.random.uniform(0,2*np.pi)
         simulator.set_initial_steady_state(
-            steady_state_control_input=np.ones(
-                (simulator.num_segments, simulator.num_controls_per_segment)
-            )
-            * 0.4,
-            max_duration=10,
+            steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.5,1.0), angle=angle),
+            kick=steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,1.0), angle=angle + np.pi/2),
         )
 
         rollout(
@@ -51,6 +55,7 @@ def main(args):
             video_filename=os.path.join(
                 args.data_folder, "videos", f"rollout_{rollout_idx}.mp4"
             ),
+            stop_at_convergence=False
         )
 
     data.save_to_csv(os.path.join(args.data_folder, "data.csv"))
@@ -65,7 +70,7 @@ def parse_args():
     parser.add_argument(
         "--duration",
         type=float,
-        default=10.0,
+        default=5.0,
         help="Duration of each rollout in seconds.",
     )
     parser.add_argument(
@@ -85,6 +90,9 @@ def parse_args():
     )
     parser.add_argument(
         "--num_segments", type=int, default=3, help="Number of segments in the trunk"
+    )
+    parser.add_argument(
+        "--policy", type=str, default="none", help="Control input to use. Options: none, harmonic"
     )
     return parser.parse_args()
 

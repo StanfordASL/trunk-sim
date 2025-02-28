@@ -54,9 +54,9 @@ class Simulator:
             self.sim_steps = int(self.sim_steps)
 
         self.reset()
-        self.prev_states = None
 
     def reset(self):
+        self.prev_states = None
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
         mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
 
@@ -110,14 +110,17 @@ class Simulator:
 
         return self.data.ctrl
 
-    def set_initial_steady_state(self, steady_state_control_input, max_duration=10):
+    def set_initial_steady_state(self, steady_state_control_input, kick=None, max_duration=10.0, kick_duration=0.1):
         self.reset()
 
-        print("Setting steady state...")
         while not self.has_converged() and self.data.time < max_duration:
             self.step(steady_state_control_input)
+        
+        current_time = self.data.time
+        if kick is not None:
+            while self.data.time < current_time + kick_duration:
+                self.step(kick)
 
-        print("Steady state reached.")
 
 
 class TrunkSimulator(Simulator):

@@ -72,12 +72,23 @@ class HarmonicPolicy(TrunkPolicy):
         self.frequency = frequency
         self.amplitude = amplitude
         self.phase = phase
-        self.policy = lambda t, _: amplitude * np.array(
+        self.policy = lambda t, _: amplitude * np.array([
             [
                 np.sin(2 * np.pi * frequency * t + self.phase),
                 np.cos(2 * np.pi * frequency * t + self.phase),
-            ]
-            * num_segments
-        )
+            ],
+            [0,0],
+            [0,0],
+        ])
 
         super().__init__(self.policy)
+
+def steady_state_input(num_segments, num_controls_per_segment=2, amplitude=1.0, angle=1):
+    """
+    Get a steady state control input for a given number of segments and controls per segment.
+    """
+    assert num_controls_per_segment == 2, "Only implemented for 2 controls per segment"
+
+    vec = np.array([np.cos(angle), np.sin(angle)])
+
+    return np.vstack([vec for _ in range(num_segments)]) * amplitude
