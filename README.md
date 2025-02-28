@@ -16,7 +16,7 @@ The ASL Trunk simulator is a tool designed to simulate the dynamics of a trunk s
 To generate simulation data, run:
 
 ```bash
-python scripts/generate_data.py
+uv run scripts/generate_data.py --render_video
 ```
 
 ### Running Tests
