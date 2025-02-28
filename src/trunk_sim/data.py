@@ -12,95 +12,135 @@ class TrunkData:
     Stores simulation data with time, states, and inputs in a pandas DataFrame.
     Provides functionality to save as CSV and convert to PyTorch dataset.
     """
-    def __init__(self, states: str = "pos", links: List = [3]):
+    def __init__(self, states: str = "pos", links: List = [3], num_links: int = 3):
         """
         Initialize a TrunkData object.
         
         Args:
-            states: states specification ("pos", "vel", "pos_vel")
+            states: states to be saved ("pos", "vel", "pos_vel")
             links: links to be included in the dataset, starting from 1
+            num_links: total number of links in the system
         """
         self.states = states
         self.links = links
+        self.num_links = num_links
+        self.link_idx = [link - 1 for link in links]
         
         # Column name patterns
         self.time_col = "t"
 
         if self.states == "pos":
             self.state_cols = [f"{axis}{link}" for link in links for axis in ["x", "y", "z"]]
+            self.state_new_cols = [f"{axis}{link}_new" for link in links for axis in ["x", "y", "z"]]
         elif self.states == "vel":
             self.state_cols = [f"{axis}{link}" for link in links for axis in ["vx", "vy", "vz"]]
+            self.state_new_cols = [f"{axis}{link}_new" for link in links for axis in ["vx", "vy", "vz"]]
         elif self.states == "pos_vel":
             self.state_cols = [f"{axis}{link}" for link in links for axis in ["x", "y", "z", "vx", "vy", "vz"]]
+            self.state_new_cols = [f"{axis}{link}_new" for link in links for axis in ["x", "y", "z", "vx", "vy", "vz"]]
         else:
             raise ValueError(f"Invalid states specification: {self.states}")
 
-        self.control_cols = [f"u{axis}{link}" for link in links for axis in ["x", "y"]]
+        # All control inputs are saved
+        self.control_cols = [f"u{axis}{link}" for link in range(1, self.num_links + 1) for axis in ["x", "y"]]
 
         self.state_dim = len(self.state_cols)
         self.control_dim = len(self.control_cols)
         
         # Initialize an empty DataFrame
-        self.data = pd.DataFrame()
+        self.dataframe = pd.DataFrame()
     
-    def add_data(self, t: float, x: np.ndarray, u: np.ndarray) -> None:
+    def add_data(self, t: float, x: np.ndarray, u: np.ndarray, x_new: np.ndarray) -> None:
         """
         Add a single data point to the dataset.
         
         Args:
             t: Time value
-            x: State vector
-            u: Input vector
+            x: State vector of shape (num_links, 6 * num_links)
+            u: Input vector of shape (num_links, 2 * num_links)
+            x_new: Next state vector of shape (num_links, 6 * num_links)
         """
         # Check dimensions
-        assert len(x) == self.state_dim, f"Expected state dimension {self.state_dim}, got {len(x)}"
-        assert len(u) == self.control_dim, f"Expected input dimension {self.control_dim}, got {len(u)}"
-            
+        assert len(x.flatten()) == 6 * self.num_links, f"Expected state dimension {self.state_dim}, got {len(x)}"
+        assert len(u.flatten()) == 2 * self.num_links, f"Expected input dimension {self.control_dim}, got {len(u)}"
+        assert len(x_new.flatten()) == 6 * self.num_links, f"Expected next state dimension {self.state_dim}, got {len(x_new)}"
+
+        # Subselect the desired states
+        if self.states == "pos":
+            x = x[:, :3]
+            x_new = x_new[:, :3]
+        elif self.states == "vel":
+            x = x[:, 3:]
+            x_new = x_new[:, 3:]
+
+        # Subselect the desired links
+        x = x[self.link_idx].flatten()
+        u = u.flatten()  # all control inputs are saved
+        x_new = x_new[self.link_idx].flatten()
+
         # Create a new row
         row_data = {self.time_col: t}
         
         # Add state and input data
         row_data.update(dict(zip(self.state_cols, x)))
         row_data.update(dict(zip(self.control_cols, u)))
+        row_data.update(dict(zip(self.state_new_cols, x_new)))
             
         # Append the new row
         new_row = pd.DataFrame([row_data])
-        self.data = pd.concat([self.data, new_row], ignore_index=True)
-    
+        self.dataframe = pd.concat([self.dataframe, new_row], ignore_index=True)
+
     def add_batch_data(self, t_batch: np.ndarray,
                       x_batch: np.ndarray,
-                      u_batch: np.ndarray) -> None:
+                      u_batch: np.ndarray,
+                      x_new_batch: np.ndarray) -> None:
         """
         Add a batch of data points to the dataset.
         
         Args:
             t_batch: Array of time values of shape (batch_size,)
-            x_batch: Array of state vectors of shape (batch_size, state_dim)
-            u_batch: Array of input vectors of shape (batch_size, control_dim)
+            x_batch: Array of state vectors of shape (batch_size, num_links, 6 * num_links)
+            u_batch: Array of input vectors of shape (batch_size, num_links, 2 * num_links)
+            x_new_batch: Array of next state vectors of shape (batch_size, num_links, 6 * num_links)
         """
-        t_batch = np.array(t_batch).flatten()
-        x_batch = np.array(x_batch)
-        u_batch = np.array(u_batch)
-            
+        # Expected shapes
+        batch_size = len(t_batch)
+        expected_x_shape = (batch_size, self.num_links, 6)
+        expected_u_shape = (batch_size, self.num_links, 2)
+        expected_x_new_shape = (batch_size, self.num_links, 6)
+        
+        # Check dimensions
+        assert x_batch.shape == expected_x_shape, f"Expected x_batch shape {expected_x_shape}, got {x_batch.shape}"
+        assert u_batch.shape == expected_u_shape, f"Expected u_batch shape {expected_u_shape}, got {u_batch.shape}"
+        assert x_new_batch.shape == expected_x_new_shape, f"Expected x_new_batch shape {expected_x_new_shape}, got {x_new_batch.shape}"
+
+        # Subselect the desired states
+        if self.states == "pos":
+            x_batch = x_batch[:, :, :3]
+            x_new_batch = x_new_batch[:, :, :3]
+        elif self.states == "vel":
+            x_batch = x_batch[:, :, 3:]
+            x_new_batch = x_new_batch[:, :, 3:]
+        
+        # Subselect the desired links
+        x_batch = x_batch[:, self.link_idx].reshape(batch_size, -1)
+        u_batch = u_batch.reshape(batch_size, -1)  # all control inputs are saved
+        x_new_batch = x_new_batch[:, self.link_idx].reshape(batch_size, -1)
+
         # Create batch data
         batch_data = {self.time_col: t_batch}
-        
-        # Handle state and input shapes
-        if len(x_batch.shape) == 1:
-            x_batch = x_batch.reshape(1, -1)
-        if len(u_batch.shape) == 1:
-            u_batch = u_batch.reshape(1, -1)
 
-        # Add state and input data            
+        # Add data 
         for i, col in enumerate(self.state_cols):
             batch_data[col] = x_batch[:, i]
-
         for i, col in enumerate(self.control_cols):
             batch_data[col] = u_batch[:, i]
+        for i, col in enumerate(self.state_new_cols):
+            batch_data[col] = x_new_batch[:, i]
 
         # Create and append the new batch
         batch_df = pd.DataFrame(batch_data)
-        self.data = pd.concat([self.data, batch_df], ignore_index=True)
+        self.dataframe = pd.concat([self.dataframe, batch_df], ignore_index=True)
     
     def save_to_csv(self, filename: str) -> None:
         """
@@ -109,8 +149,8 @@ class TrunkData:
         Args:
             filename: Path to the CSV file to save
         """
-        self.data.to_csv(filename, index=False)
-    
+        self.dataframe.to_csv(filename, index=False)
+
     def load_from_csv(self, filename: str) -> None:
         """
         Load data from a CSV file.
@@ -118,16 +158,27 @@ class TrunkData:
         Args:
             filename: Path to the CSV file to load
         """
-        self.data = pd.read_csv(filename)
+        self.dataframe = pd.read_csv(filename)
         
         # Infer column types
-        cols = list(self.data.columns)
+        cols = list(self.dataframe.columns)
         if 't' in cols:
             self.time_col = 't'
             cols.remove('t')
         
-        self.state_cols = [col for col in cols if col.startswith('x')]
+        # Identify control columns first (assume they start with 'u')
         self.control_cols = [col for col in cols if col.startswith('u')]
+        
+        # Separate state and state_new columns (all non-control, non-time columns)
+        remaining_cols = [col for col in cols if col not in self.control_cols]
+        
+        self.state_cols = [col for col in remaining_cols if not col.endswith('_new')]
+        self.state_new_cols = [col for col in remaining_cols if col.endswith('_new')]
+        
+        # Sort columns to ensure consistent ordering
+        self.state_cols.sort()
+        self.state_new_cols.sort()
+        self.control_cols.sort()
         
         self.state_dim = len(self.state_cols)
         self.control_dim = len(self.control_cols)
@@ -139,53 +190,40 @@ class TrunkData:
         Convert to a PyTorch Dataset.
         
         Args:
-            input_cols: List of column names to use as inputs (defaults to all state and input columns)
-            output_cols: List of column names to use as outputs (defaults to all state columns)
+            input_cols: List of column names to use as inputs
+            output_cols: List of column names to use as outputs
             
         Returns:
             A TrunkTorchDataset instance
         """
         if input_cols is None:
-            input_cols = self.state_cols
+            input_cols = self.state_cols + self.control_cols
         if output_cols is None:
-            output_cols = self.control_cols
+            output_cols = self.state_new_cols
             
-        return TrunkTorchDataset(self.data, input_cols, output_cols)
+        return TrunkTorchDataset(self.dataframe, input_cols, output_cols)
     
-    def get_state_at_time(self, t: float) -> np.ndarray:
+    def get_data_at_time(self, t: float) -> np.ndarray:
         """
-        Get the state vector at a specific time.
+        Get the single row of data at a specific time.
         
         Args:
             t: Time value
             
         Returns:
-            State vector at time t
+            Vector with states, control and new states at the given time
         """
         # Find the closest time
-        closest_idx = (self.data[self.time_col] - t).abs().idxmin()
-        return self.data.loc[closest_idx, self.state_cols].values
-    
-    def get_input_at_time(self, t: float) -> np.ndarray:
-        """
-        Get the input vector at a specific time.
-        
-        Args:
-            t: Time value
-            
-        Returns:
-            Input vector at time t
-        """
-        closest_idx = (self.data[self.time_col] - t).abs().idxmin()
-        return self.data.loc[closest_idx, self.control_cols].values
+        closest_idx = (self.dataframe[self.time_col] - t).abs().idxmin()
+        return self.dataframe.loc[closest_idx, :].values
     
     def __len__(self) -> int:
         """Return the number of data points."""
-        return len(self.data)
+        return len(self.dataframe)
     
     def __getitem__(self, idx):
         """Allow indexing the data directly."""
-        return self.data.iloc[idx]
+        return self.dataframe.iloc[idx]
 
 
 class TrunkTorchDataset(Dataset):
