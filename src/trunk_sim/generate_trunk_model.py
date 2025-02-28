@@ -9,13 +9,13 @@ def payload_body(mass=0.1, size=0.1):
         </body>
     '''
 
-def link(index, inner="", size=0.1, radius=0.05, density=0.1, damping=10.0, armature=0.1, stiffness=10.0, joint=True):
+def link(index, inner="", size=0.1, radius=0.005, density=0.1, damping=10.0, armature=0.01, stiffness=100.0, joint=True):
     assert size > radius, "Size must be greater than radius"
     joint_str = f'<joint name="joint_{index}" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="{armature}" damping="{damping}" stiffness="{stiffness}"/>' if joint else ""
     return f'''
         <body name="link_{index}" pos="{size} 0 0">
             {joint_str}
-            <geom name="geom_{index}" size="{radius} {radius}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="{GEOM_COLOR}"/>
+            <geom name="geom_{index}" size="{radius} {size/2}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="{GEOM_COLOR}"/>
             <site name="site_y_front_{index}" pos="0 {radius} 0"/> 
             <site name="site_y_back_{index}" pos="0 -{radius} 0"/>
             <site name="site_z_front_{index}" pos="0 0 {radius}"/> 
@@ -37,7 +37,11 @@ def tendon(name, site_names, stiffness=0.0, damping=1.0, width=0.002):
 def muscle(tendon_name):
     return f'''<muscle tendon="{tendon_name}"/> '''
 
-def base(bodies, tendons="", muscles=""):
+def contact(body_1, body_2):
+    return f'''
+        <exclude body1="{body_1}" body2="{body_2}"/>
+    '''
+def base(bodies, tendons="", muscles="", contacts=""):
     return f'''
     <mujoco model="trunk">
         <compiler angle="radian"/>
@@ -69,16 +73,22 @@ def base(bodies, tendons="", muscles=""):
             {muscles}
         </actuator>
 
+        <contact>
+            {contacts}
+        </contact>
+
     </mujoco>
     '''
 
-def generate_trunk_model(n_links=100, payload_mass=0.1):
+def generate_trunk_model(n_links=10, payload_mass=0.1):
     bodies_string = payload_body(mass=payload_mass) if payload_mass > 0 else ""
 
+    radius = 0.025
+    size = 0.3/n_links
     for i in range(n_links, 0, -1):
-        bodies_string = link(i, inner=bodies_string)
+        bodies_string = link(i, inner=bodies_string, size=size, radius=radius)
 
-    bodies_string = link(0, inner=bodies_string, joint=False)
+    bodies_string = link(0, inner=bodies_string, joint=False, size=size, radius=radius)
 
     tendons_string = ""
     muscles_string = ""
@@ -87,7 +97,9 @@ def generate_trunk_model(n_links=100, payload_mass=0.1):
 
         muscles_string += muscle(f"tendon_{position}")
 
-    return base(bodies_string, tendons=tendons_string, muscles=muscles_string)
+    contacts = "\n".join([contact(f"link_{i}", f"link_{i+1}") for i in range(0, n_links)])
+
+    return base(bodies_string, tendons=tendons_string, muscles=muscles_string, contacts=contacts)
 
 
 if __name__ == "__main__":

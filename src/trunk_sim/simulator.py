@@ -56,6 +56,9 @@ class Simulator:
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
         mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
 
+    def reset_time(self):
+        self.data.time = 0
+
     def set_state(self, qpos=None, qvel=None):
         if qpos is not None:
             self.data.qpos[:] = qpos
@@ -63,11 +66,14 @@ class Simulator:
             self.data.qvel[:] = qvel
 
     def step(self, control_input=None):
-        self.set_control_input(control_input)
+        t = self.get_time()
+        x = self.get_states()
+        u = self.set_control_input(control_input)
         for i in range(self.sim_steps):
             mujoco.mj_step(self.model, self.data)
 
-        return self.data.time, self.get_states(), self.has_converged()
+        x_next = self.get_states()
+        return t, x, u, x_next
 
     def has_converged(self, threshold=1e-6):
         if np.linalg.norm(self.prev_states - self.get_states()) < threshold:
@@ -80,12 +86,25 @@ class Simulator:
             [self.data.body(b).xpos.copy().tolist() for b in range(1, self.model.nbody)]
         )
 
+    def get_time(self):
+        return self.data.time
+
     def set_control_input(self, control_input=None):
         if control_input is not None:
             self.data.ctrl[:] = control_input
         else:
             self.data.ctrl[:] = 0
+        
+        return self.data.ctrl
 
+    def set_initial_steady_state(self, steady_state_control_input=None, max_duration=10):
+        self.reset()
+        converged = False
+        print("Setting steady state...")
+        while not converged and self.data.time < max_duration:
+            t, _, converged = self.step(steady_state_control_input)
+
+        print("Steady state reached.")
 
 class TrunkSimulator(Simulator):
     def __init__(

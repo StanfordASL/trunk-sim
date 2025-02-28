@@ -20,8 +20,8 @@ def rollout(simulator: TrunkSimulator,
     """
     Rollout a policy on a simulator and save it inside a data object.
     """
-    simulator.reset()
 
+    simulator.reset_time()
     converged = False
     
     if render_video:
@@ -29,7 +29,7 @@ def rollout(simulator: TrunkSimulator,
 
         with mujoco.Renderer(simulator.model) as renderer:
             while simulator.data.time < duration and (not stop_at_convergence or not converged):
-                rollout_step(simulator, policy, data)
+                converged = rollout_step(simulator, policy, data)
 
                 # Rendering
                 renderer.update_scene(simulator.data)
@@ -40,7 +40,7 @@ def rollout(simulator: TrunkSimulator,
         
     else:
         while simulator.data.time < duration and (not stop_at_convergence or not converged):
-            rollout_step(simulator, policy, data)
+            converged = rollout_step(simulator, policy, data)
 
 
 def rollout_step(simulator: TrunkSimulator,
@@ -50,9 +50,12 @@ def rollout_step(simulator: TrunkSimulator,
     Perform a single step of a rollout.
     """
     state = simulator.get_states()
-    control_input = policy(state) if policy is not None else None
+    t = simulator.get_time()
+    control_input = policy(t, state) if policy is not None else None
         
     t, _, converged = simulator.step(control_input)
 
     if data is not None:
-        data.add_data(t, state, control_input)
+        data.add_data(t, state.T, control_input)
+
+    return converged

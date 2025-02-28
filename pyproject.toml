@@ -19,6 +19,7 @@ dependencies = [
 dev = [
     "black>=25.1.0",
     "ipykernel>=6.29.5",
+    "ipympl>=0.9.6",
     "pytest>=8.3.4",
 ]
 
