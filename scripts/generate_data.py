@@ -11,19 +11,36 @@ from trunk_sim.rollout import rollout
 
 
 def main(args):
-    simulator = TrunkSimulator(num_segments=1, num_links_per_segment=10, tip_mass=args.tip_mass)
-    data = TrunkData(simulator.num_links_per_segment, simulator.num_segments, states="pos_vel", segments="all")
-    policy = None #HarmonicPolicy(frequency=1.0, amplitude=1.0, phase=0.0, num_segments=simulator.num_segments)
+    simulator = TrunkSimulator(
+        num_segments=1, num_links_per_segment=10, tip_mass=args.tip_mass
+    )
+    data = TrunkData(
+        simulator.num_links_per_segment,
+        simulator.num_segments,
+        states="pos_vel",
+        links="all",
+    )
+    policy = HarmonicPolicy(
+        frequency=1.0, amplitude=0.2, phase=0.0, num_segments=simulator.num_segments
+    )
 
     if not os.path.exists(args.data_folder):
         os.makedirs(args.data_folder)
 
-    if args.render_video and not os.path.exists(os.path.join(args.data_folder, "videos")):
+    if args.render_video and not os.path.exists(
+        os.path.join(args.data_folder, "videos")
+    ):
         os.makedirs(os.path.join(args.data_folder, "videos"))
 
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
 
-        simulator.set_initial_steady_state(steady_state_control_input=np.ones((simulator.num_segments, simulator.num_controls_per_segment)), max_duration=10)
+        simulator.set_initial_steady_state(
+            steady_state_control_input=np.ones(
+                (simulator.num_segments, simulator.num_controls_per_segment)
+            )
+            * 0.4,
+            max_duration=10,
+        )
 
         rollout(
             simulator=simulator,
@@ -31,10 +48,13 @@ def main(args):
             data=data,
             duration=args.duration,
             render_video=args.render_video,
-            video_filename=os.path.join(args.data_folder, "videos", f"rollout_{rollout_idx}.mp4")
+            video_filename=os.path.join(
+                args.data_folder, "videos", f"rollout_{rollout_idx}.mp4"
+            ),
         )
 
     data.save_to_csv(os.path.join(args.data_folder, "data.csv"))
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -64,12 +84,10 @@ def parse_args():
         help="Mass of the trunk tip.",
     )
     parser.add_argument(
-        "--num_segments",
-        type=int,
-        default=3,
-        help="Number of segments in the trunk"
+        "--num_segments", type=int, default=3, help="Number of segments in the trunk"
     )
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     main(parse_args())

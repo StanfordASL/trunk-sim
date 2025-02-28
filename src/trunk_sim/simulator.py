@@ -43,7 +43,9 @@ class Simulator:
         self.timestep = timestep  # Measured state and input timestep
         self.sim_timestep = 0.002  # Mujoco simulation timestep
 
-        assert self.sim_timestep <= self.timestep, "Timestep must be greater than Mujoco timestep."
+        assert (
+            self.sim_timestep <= self.timestep
+        ), "Timestep must be greater than Mujoco timestep."
 
         self.sim_steps = self.timestep / self.sim_timestep
         if self.sim_steps % 1 != 0:
@@ -83,14 +85,16 @@ class Simulator:
         if self.prev_states is None:
             self.prev_states = self.get_states()
             return False
-        
+
         if np.linalg.norm(self.prev_states - self.get_states()) < threshold:
             return True
         else:
             return False
 
     def get_states(self):
-        positions = np.array([self.data.body(b).xpos.copy().tolist() for b in range(4, self.model.nbody)])
+        positions = np.array(
+            [self.data.body(b).xpos.copy().tolist() for b in range(3, self.model.nbody)]
+        )
         # TODO: Add velocities, for now zeros
         velocities = np.zeros_like(positions)
         return np.concatenate([positions, velocities], axis=1)
@@ -103,17 +107,18 @@ class Simulator:
             self.data.ctrl[:] = control_input
         else:
             self.data.ctrl[:] = 0
-        
+
         return self.data.ctrl
 
     def set_initial_steady_state(self, steady_state_control_input, max_duration=10):
         self.reset()
-        
+
         print("Setting steady state...")
         while not self.has_converged() and self.data.time < max_duration:
             self.step(steady_state_control_input)
 
         print("Steady state reached.")
+
 
 class TrunkSimulator(Simulator):
     def __init__(
@@ -123,26 +128,30 @@ class TrunkSimulator(Simulator):
         tip_mass: float = 0.5,
         timestep: Optional[float] = 0.01,
     ):
-        
+
         self.num_controls_per_segment = 2
         self.num_controls_per_segment_mujoco = 4
         self.num_segments = num_segments
         self.num_links_per_segment = num_links_per_segment
-        self.num_links = num_segments*num_links_per_segment
-        
+        self.num_links = num_segments * num_links_per_segment
+
         # Mapping from control input to mujoco actuators
-        self.input_map = np.array([[1, 0], 
-                                   [-1, 0], 
-                                   [0, 1], 
-                                   [0, -1]]) # (num_controls_per_segment_mujoco x num_controls_per_segment)
-        
-        self.inverse_input_map = np.linalg.pinv(self.input_map) # (num_controls_per_segment x num_controls_per_segment_mujoco)
+        self.input_map = np.array(
+            [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        )  # (num_controls_per_segment_mujoco x num_controls_per_segment)
+
+        self.inverse_input_map = np.linalg.pinv(
+            self.input_map
+        )  # (num_controls_per_segment x num_controls_per_segment_mujoco)
 
         super().__init__(
-            model_xml=generate_trunk_model(num_links=self.num_links, tip_mass=tip_mass),
+            model_xml=generate_trunk_model(
+                num_segments=num_segments,
+                num_links_per_segment=num_links_per_segment,
+                tip_mass=tip_mass,
+            ),
             timestep=timestep,
         )
-
 
     def set_control_input(self, control_input=None):
         """
@@ -150,8 +159,24 @@ class TrunkSimulator(Simulator):
         """
 
         # u_mujoco is (num_segments x num_controls_per_segment_mujoco).flatten()
-        u_mujoco = (control_input @ self.input_map.T).flatten() if control_input is not None else None
-        u = super().set_control_input(u_mujoco).reshape(-1, self.num_controls_per_segment_mujoco) @ self.inverse_input_map.T
+        u_mujoco = (
+            (control_input @ self.input_map.T).flatten()
+            if control_input is not None
+            else None
+        )
+        u = (
+            super()
+            .set_control_input(u_mujoco)
+            .reshape(-1, self.num_controls_per_segment_mujoco)
+            @ self.inverse_input_map.T
+        )
 
         return u
-    
+
+    def get_states(self):
+        positions = np.array(
+            [self.data.body(b + 3).xpos.copy().tolist() for b in range(self.num_links)]
+        )  # Skip first 3 bodies
+        # TODO: Add velocities, for now zeros
+        velocities = np.zeros_like(positions)
+        return np.concatenate([positions, velocities], axis=1)
