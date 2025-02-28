@@ -14,6 +14,7 @@ def main(args):
     simulator = TrunkSimulator(
         num_segments=args.num_segments, tip_mass=args.tip_mass
     )
+    
     data = TrunkData(
         simulator.num_links_per_segment,
         simulator.num_segments,

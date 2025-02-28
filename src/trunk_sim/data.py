@@ -304,7 +304,7 @@ class TrunkTorchDataset(Dataset):
     """PyTorch Dataset wrapper for TrunkData."""
 
     def __init__(
-        self, dataframe: pd.DataFrame, input_cols: List[str], output_cols: List[str]
+        self, csv_file: Optional[str] = None, dataframe: Optional[pd.DataFrame] = None
     ):
         """
         Initialize a PyTorch dataset from a pandas DataFrame.
@@ -314,9 +314,20 @@ class TrunkTorchDataset(Dataset):
             input_cols: Column names to use as inputs
             output_cols: Column names to use as outputs
         """
-        self.dataframe = dataframe
-        self.input_cols = input_cols
-        self.output_cols = output_cols
+        if dataframe and csv_file:
+            raise ValueError("Cannot provide both a DataFrame and a CSV file.")
+        
+        if dataframe:
+            self.dataframe = dataframe
+        elif csv_file:
+            self.dataframe = pd.read_csv(csv_file)
+        else:
+            raise ValueError("Must provide either a DataFrame or a CSV file.")
+        
+        self.time_col = "t"
+        self.state_cols = [key for key in self.dataframe.keys() if key.startswith("x") and not key.endswith("new")]
+        self.control_cols = [key for key in self.dataframe.keys() if key.startswith("u")]
+        self.state_new_cols = [key for key in self.dataframe.keys() if key.startswith("x") and key.endswith("new")]
 
     def __len__(self) -> int:
         """Return the number of data points."""
@@ -336,11 +347,15 @@ class TrunkTorchDataset(Dataset):
             idx = idx.item()
 
         # Get input and output values
-        inputs = self.dataframe.iloc[idx][self.input_cols].values
-        outputs = self.dataframe.iloc[idx][self.output_cols].values
+        t = self.dataframe.iloc[idx][self.time_col]
+        states = self.dataframe.iloc[idx][self.state_cols].values
+        controls = self.dataframe.iloc[idx][self.control_cols].values
+        next_states = self.dataframe.iloc[idx][self.state_new_cols].values
 
         # Convert to PyTorch tensors
-        input_tensor = torch.tensor(inputs, dtype=torch.float32)
-        output_tensor = torch.tensor(outputs, dtype=torch.float32)
+        t = torch.tensor(t, dtype=torch.float32)
+        x = torch.tensor(states, dtype=torch.float32)
+        u = torch.tensor(controls, dtype=torch.float32)
+        x_new = torch.tensor(next_states, dtype=torch.float32)
 
-        return input_tensor, output_tensor
+        return {"t": t, "x": x, "u": u, "x_new": x_new}

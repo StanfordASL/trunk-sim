@@ -187,3 +187,4 @@ MUJOCO_LOG.TXT
 
 # Data
 *.csv
+data/
