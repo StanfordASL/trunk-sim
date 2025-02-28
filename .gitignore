@@ -169,3 +169,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Mac OS X Finder directory files
+.DS_Store
+
+# Custom env sourcing (not in different location than .venv)
+set_venv.sh
+
+# Visual Studio Code
+.vscode/
+
+# Mujoco files
+MUJOCO_LOG.TXT

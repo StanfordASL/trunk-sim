@@ -1,0 +1,31 @@
+[project]
+name = "trunk-sim"
+version = "0.1.0"
+description = "ASL Trunk simulator"
+readme = "README.md"
+keywords = ["trunk", "simulator", "robotics"]
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "mediapy>=1.2.2",
+    "mujoco>=3.2.7",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "torch>=2.6.0",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "ipykernel>=6.29.5",
+    "ipympl>=0.9.6",
+    "pytest>=8.3.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ['src']
+
+[tool.uv]
+package = true
