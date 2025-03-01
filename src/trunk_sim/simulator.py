@@ -53,12 +53,16 @@ class Simulator:
         else:
             self.sim_steps = int(self.sim_steps)
 
+        self.track_bodies = range(3, self.model.nbody) # Track states of all bodies except the ground and the first two bodies
         self.reset()
-
+    
     def reset(self):
         self.prev_states = None
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
         mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
+
+        self.positions = None
+        self._set_states()
 
     def reset_time(self):
         self.data.time = 0
@@ -68,18 +72,6 @@ class Simulator:
             self.data.qpos[:] = qpos
         if qvel is not None:
             self.data.qvel[:] = qvel
-
-    def step(self, control_input=None):
-        t = self.get_time()
-        x = self.get_states()
-        u = self.set_control_input(control_input)
-
-        for i in range(self.sim_steps):
-            mujoco.mj_step(self.model, self.data)
-
-        x_new = self.get_states()
-
-        return t, x, u, x_new
 
     def has_converged(self, threshold=1e-3):
         if self.prev_states is None:
@@ -92,13 +84,22 @@ class Simulator:
             return False
 
     def get_states(self):
+        #TODO: Use mujoco velocity instead of computing it manually
+        #Provides velocity as v_k = (x_{k} - x_{k-1})/dt
+        return np.concatenate([self.positions, self.velocities], axis=1)
+    
+    def _set_states(self):
         positions = np.array(
-            [self.data.body(b).xpos.copy().tolist() for b in range(3, self.model.nbody)]
+            [self.data.body(b).xpos.copy().tolist() for b in self.track_bodies]
         )
-        # TODO: Add velocities, for now zeros
-        velocities = np.zeros_like(positions)
-        return np.concatenate([positions, velocities], axis=1)
 
+        # Reporting initial velocities as zero
+        if self.positions is None:
+            self.positions = positions
+
+        self.velocities = (positions - self.positions)/self.timestep
+        self.positions = positions
+    
     def get_time(self):
         return self.data.time
 
@@ -121,6 +122,21 @@ class Simulator:
             while self.data.time < current_time + kick_duration:
                 self.step(kick)
 
+    def step(self, control_input=None):
+        t = self.get_time()
+        x = self.get_states()
+        u = self.set_control_input(control_input)
+
+        for i in range(self.sim_steps):
+            mujoco.mj_step(self.model, self.data)
+        
+        #mujoco.mj_kinematics(self.model, self.data)
+
+        self._set_states()
+
+        x_new = self.get_states()
+
+        return t, x, u, x_new
 
 
 class TrunkSimulator(Simulator):
@@ -156,6 +172,8 @@ class TrunkSimulator(Simulator):
             timestep=timestep,
         )
 
+        self.track_bodies = range(3, self.num_links + 3)  # Track only the links
+
     def set_control_input(self, control_input=None):
         """
         control_input: np.array of shape (num_segments, num_controls_per_segment)
@@ -176,10 +194,3 @@ class TrunkSimulator(Simulator):
 
         return u
 
-    def get_states(self):
-        positions = np.array(
-            [self.data.body(b + 3).xpos.copy().tolist() for b in range(self.num_links)]
-        )  # Skip first 3 bodies
-        # TODO: Add velocities, for now zeros
-        velocities = np.zeros_like(positions)
-        return np.concatenate([positions, velocities], axis=1)
