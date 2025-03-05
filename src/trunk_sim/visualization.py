@@ -42,6 +42,8 @@ def visualize_trajectory_from_data(df: pd.DataFrame, links: Optional[List[int]] 
         i = i
         ax.plot(df[f"x{i}"], df[f"y{i}"], df[f"z{i}"], label=f"Trajectory {i}")
 
+    # aspect ratio
+    ax.set_box_aspect([1,1,1])
     ax.set_xlabel('$x$')
     ax.set_ylabel('$y$')
     ax.set_zlabel('$z$')

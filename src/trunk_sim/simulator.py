@@ -111,7 +111,7 @@ class Simulator:
 
         return self.data.ctrl
 
-    def set_initial_steady_state(self, steady_state_control_input, kick=None, max_duration=10.0, kick_duration=0.1):
+    def set_initial_steady_state(self, steady_state_control_input, kick=None, max_duration=10.0, kick_duration=0.01):
         self.reset()
 
         while not self.has_converged() and self.data.time < max_duration:

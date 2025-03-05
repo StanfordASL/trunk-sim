@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from trunk_sim.simulator import TrunkSimulator
 from trunk_sim.data import TrunkData
-from trunk_sim.policy import TrunkPolicy, HarmonicPolicy, steady_state_input
+from trunk_sim.policy import TrunkPolicy, HarmonicPolicy, RandomWalkPolicy, steady_state_input
 from trunk_sim.rollout import rollout
 
 
@@ -22,16 +22,6 @@ def main(args):
         links="all",
     )
 
-    # Define control policy
-    if args.policy == "harmonic":
-        policy = HarmonicPolicy(
-            frequency=1.0, amplitude=np.random.rand(), phase=np.random.uniform(0,2*np.pi), num_segments=simulator.num_segments
-        )
-    elif args.policy == "none":
-        policy = None
-    else:
-        raise ValueError(f"Invalid control input: {args.control_input}")
-
     if not os.path.exists(args.data_folder):
         os.makedirs(args.data_folder)
 
@@ -41,11 +31,24 @@ def main(args):
         os.makedirs(os.path.join(args.data_folder, "videos"))
 
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
-        angle = np.random.uniform(0,2*np.pi)
-        simulator.set_initial_steady_state(
-            steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.5,1.0), angle=angle),
-            kick=steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,1.0), angle=angle + np.pi/2),
-        )
+        if args.policy == "harmonic":
+            policy = HarmonicPolicy(
+                frequency=np.random.uniform(0.01, 1.0), amplitude=np.random.uniform(0.01,2.0), phase=np.random.uniform(0,2*np.pi), num_segments=simulator.num_segments
+            )
+        elif args.policy == "random_walk":
+            policy = RandomWalkPolicy()
+        elif args.policy == "none":
+            policy = None
+        else:
+            raise ValueError(f"Invalid policy: {args.policy}")
+
+        if args.init_steady_state:
+            angle = np.random.uniform(0,2*np.pi)
+            sign = np.random.choice([-1,1])
+            simulator.set_initial_steady_state(
+                steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,12.0), angle=angle),
+                kick=steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,10.0), angle=angle + np.pi/2 * sign),
+            )
 
         rollout(
             simulator=simulator,
@@ -90,10 +93,15 @@ def parse_args():
         help="Mass of the trunk tip.",
     )
     parser.add_argument(
+        "--init_steady_state",
+        action="store_true",
+        help="Initialize the trunk in a steady state configuration.",
+    )
+    parser.add_argument(
         "--num_segments", type=int, default=3, help="Number of segments in the trunk"
     )
     parser.add_argument(
-        "--policy", type=str, default="none", help="Control input to use. Options: none, harmonic"
+        "--policy", type=str, default="none", help="Control input to use. Options: none, harmonic, random_walk"
     )
     return parser.parse_args()
 

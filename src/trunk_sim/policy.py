@@ -69,19 +69,40 @@ class HarmonicPolicy(TrunkPolicy):
         """
         Initialize the policy with a given discrete-time frequency and amplitude.
         """
+        print(f"HarmonicPolicy: frequency={frequency}, amplitude={amplitude}, phase={phase}, num_segments={num_segments}")
         self.frequency = frequency
         self.amplitude = amplitude
         self.phase = phase
-        self.policy = lambda t, _: amplitude * np.array([
-            [
+        self.policy = lambda t, _: amplitude * np.array([[
                 np.sin(2 * np.pi * frequency * t + self.phase),
                 np.cos(2 * np.pi * frequency * t + self.phase),
-            ],
-            [0,0],
-            [0,0],
-        ])
+            ]] * num_segments)
 
         super().__init__(self.policy)
+
+class RandomWalkPolicy(TrunkPolicy):
+    """
+    Simple random policy that returns a random control input.
+    """
+
+    def __init__(self, num_segments=3, max_amplitude=12.0, dt=0.1):
+        self.max_amplitude = max_amplitude
+        self.dt = dt
+
+        self.input = np.zeros((num_segments, 2))
+        self.t = -np.inf
+        super().__init__(self._policy)
+
+    def _policy(self, t, _):
+        if t <= self.t + self.dt:
+            return self.input
+        
+        delta_input = np.sqrt(self.dt) * np.random.normal(size=(self.input.shape))
+        new_input = self.input + delta_input
+        new_input = np.clip(new_input, -self.max_amplitude, self.max_amplitude)
+        self.input = new_input
+
+        return new_input
 
 def steady_state_input(num_segments, num_controls_per_segment=2, amplitude=1.0, angle=1):
     """
