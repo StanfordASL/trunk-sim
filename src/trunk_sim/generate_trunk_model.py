@@ -40,7 +40,7 @@ def link(
     """
 
 
-def tendon(name, site_names, stiffness=0.0, damping=1.0, width=0.002):
+def tendon(name, site_names, stiffness=0.0, damping=0.0, width=0.002):
     sites = [f'<site site="{site_name}"/>' for site_name in site_names]
     return f'''
         <tendon>
@@ -52,7 +52,7 @@ def tendon(name, site_names, stiffness=0.0, damping=1.0, width=0.002):
 
 
 def muscle(tendon_name):
-    return f"""<muscle tendon="{tendon_name}"/> """
+    return f"""<position tendon="{tendon_name}" /> """
 
 
 def contact(body_1, body_2):
@@ -61,7 +61,7 @@ def contact(body_1, body_2):
     """
 
 
-def base(bodies, tendons="", muscles="", contacts=""):
+def base(bodies, tendons="", muscles="", contacts="", sensors=""):
     return f"""
     <mujoco model="trunk">
         <compiler angle="radian"/>
@@ -82,8 +82,8 @@ def base(bodies, tendons="", muscles="", contacts=""):
 
         <worldbody>
             <light pos="0 -1 -1" dir="0 -1 -1" diffuse="1 1 1"/>
-            <body name="actuatedB_first" pos="0 0 0" quat="0 -0.707107 0 0.707107">
-                <geom name="actuatedG0" size="0.005 0.005" pos="0.005 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.8 0.2 0.1 1"/>
+            <body name="base" pos="0 0 0" quat="0 -0.707107 0 0.707107">
+                <geom name="base" size="0.005 0.005" pos="0.005 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.8 0.2 0.1 1"/>
                 {bodies}
             </body>
         </worldbody>
@@ -97,6 +97,11 @@ def base(bodies, tendons="", muscles="", contacts=""):
         <contact>
             {contacts}
         </contact>
+
+        <sensor>
+            {sensors}
+        </sensor>
+
 
     </mujoco>
     """
@@ -114,13 +119,14 @@ def generate_trunk_model(
         else ""
     )
 
-    for i in range(num_links, 0, -1):
-        bodies_string = link(i, inner=bodies_string, size=size, radius=radius)
+    for i in range(num_links, 1, -1):
+        bodies_string = link(i, inner=bodies_string, size=size, radius=radius) #link_0 has no DOFs
 
-    bodies_string = link(0, inner=bodies_string, joint=False, size=size, radius=radius)
+    bodies_string = link(1, inner=bodies_string, joint=False, size=size, radius=radius)
 
     tendons_string = ""
     muscles_string = ""
+    sensors_string = ""
 
     for i in range(1, num_segments + 1):
         for position in ["y_front", "y_back", "z_front", "z_back"]:
@@ -128,15 +134,18 @@ def generate_trunk_model(
                 f"tendon_{i}_{position}",
                 [
                     f"site_{position}_{i}"
-                    for i in range(0, num_links_per_segment * i + 1)
+                    for i in range(1, num_links_per_segment * i + 1)
                 ],
             )
+
             muscles_string += muscle(f"tendon_{i}_{position}")
+            sensors_string += f"""<force name="force_{position}_{i}" site="site_{position}_{i}"/>"""
 
     contacts = "\n".join(
-        [contact(f"link_{i}", f"link_{i+1}") for i in range(0, num_links)]
+        [contact(f"link_{i}", f"link_{i+1}") for i in range(1, num_links)]
     )
 
     return base(
-        bodies_string, tendons=tendons_string, muscles=muscles_string, contacts=contacts
+        bodies_string, tendons=tendons_string, muscles=muscles_string, contacts=contacts, sensors=sensors_string
     )
+    
