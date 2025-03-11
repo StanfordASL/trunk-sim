@@ -29,6 +29,7 @@ class Simulator:
         model_path: Optional[str] = None,
         model_xml: Optional[str] = None,
         timestep: Optional[float] = 0.01,
+        track_bodies: Optional[list] = None,
     ):
         # Load model
         if model_xml and not model_path:
@@ -53,7 +54,11 @@ class Simulator:
         else:
             self.sim_steps = int(self.sim_steps)
 
-        self.track_bodies = range(3, self.model.nbody) # Track states of all bodies except the ground and the first two bodies
+        if track_bodies:
+            self.track_bodies = track_bodies
+        else:
+            self.track_bodies = range(self.model.nbody)
+
         self.reset()
     
     def reset(self):
@@ -93,6 +98,7 @@ class Simulator:
             [self.data.body(b).xpos.copy().tolist() for b in self.track_bodies]
         )
 
+        
         # Reporting initial velocities as zero
         if self.positions is None:
             self.positions = positions
@@ -116,7 +122,8 @@ class Simulator:
 
         while not self.has_converged() and self.data.time < max_duration:
             self.step(steady_state_control_input)
-        
+            #print(self.data.actuator_force)
+
         current_time = self.data.time
         if kick is not None:
             while self.data.time < current_time + kick_duration:
@@ -137,8 +144,7 @@ class Simulator:
         x_new = self.get_states()
 
         return t, x, u, x_new
-
-
+            
 class TrunkSimulator(Simulator):
     def __init__(
         self,
@@ -172,8 +178,18 @@ class TrunkSimulator(Simulator):
             timestep=timestep,
         )
 
-        self.track_bodies = range(3, self.num_links + 3)  # Track only the links
+        self.track_bodies = self.get_link_bodies()
+        self.reset()
 
+    def get_link_bodies(self):
+        track_bodies = []
+        for i in range(self.model.nbody):
+            name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, i)
+            if "link" in name:
+                track_bodies.append(i)
+                
+        return track_bodies
+    
     def set_control_input(self, control_input=None):
         """
         control_input: np.array of shape (num_segments, num_controls_per_segment)
