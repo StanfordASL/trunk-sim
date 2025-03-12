@@ -90,9 +90,9 @@ class Simulator:
             return False
 
     def get_states(self):
-        #TODO: Use mujoco velocity instead of computing it manually
-        #Provides velocity as v_k = (x_{k} - x_{k-1})/dt
+        # TODO: Mujoco supports getting velocities directly but requires coordinate transformation
         return np.concatenate([self.positions, self.velocities], axis=1)
+    
     def get_current_positions(self):
         return np.array(
             [self.data.body(b).xpos.copy().tolist() for b in self.track_bodies]
@@ -106,7 +106,8 @@ class Simulator:
         if self.prev_positions is None:
             self.prev_positions = self.positions
 
-        self.velocities = (self.positions - self.prev_positions)/self.sim_timestep
+        # Calculate velocity as v_k = (x_{k} - x_{k-1}) / dt but with short time steps from mujoco
+        self.velocities = (self.positions - self.prev_positions) / self.sim_timestep
     
     def get_time(self):
         return self.data.time
@@ -141,8 +142,6 @@ class Simulator:
 
             if i == self.sim_steps - 2:
                 self.prev_positions = self.get_current_positions()
-
-        #mujoco.mj_kinematics(self.model, self.data)
 
         self._set_states()
 
@@ -200,7 +199,7 @@ class TrunkSimulator(Simulator):
         control_input: np.array of shape (num_segments, num_controls_per_segment)
         """
 
-        # u_mujoco is (num_segments x num_controls_per_segment_mujoco).flatten()
+        # shape of u_mujoco: (num_segments x num_controls_per_segment_mujoco).flatten()
         u_mujoco = (
             (control_input @ self.input_map.T).flatten()
             if control_input is not None

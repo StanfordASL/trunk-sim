@@ -4,9 +4,10 @@ import torch
 from torch.utils.data import Dataset
 from typing import List, Tuple, Optional, Union
 
+
 def get_column_names(
-    num_segments: int, states: str, links: List[int]
-) -> Tuple[List[str], List[str], List[str]]:
+        num_segments: int, states: str, links: List[int]
+    )-> Tuple[List[str], List[str], List[str]]:
     """
     Get column names for states, new states, and control inputs.
     """
@@ -106,6 +107,9 @@ class TrunkData:
             num_segments, states, links
         )
         
+        # Keep track of the trajectory ID
+        self.traj_ID_col = "traj_ID"
+        
         self.state_dim = len(self.state_cols)
         self.control_dim = len(self.control_cols)
 
@@ -113,7 +117,7 @@ class TrunkData:
         self.dataframe = pd.DataFrame()
 
     def add_data(
-        self, t: float, x: np.ndarray, u: np.ndarray, x_new: np.ndarray
+        self, t: float, x: np.ndarray, u: np.ndarray, x_new: np.ndarray, traj_ID: int = 0
     ) -> None:
         """
         Add a single data point to the dataset.
@@ -162,6 +166,9 @@ class TrunkData:
         row_data.update(dict(zip(self.control_cols, u)))
         row_data.update(dict(zip(self.state_new_cols, x_new)))
 
+        # Add trajectory ID
+        row_data[self.traj_ID_col] = traj_ID
+
         # Append the new row
         new_row = pd.DataFrame([row_data])
         self.dataframe = pd.concat([self.dataframe, new_row], ignore_index=True)
@@ -172,6 +179,7 @@ class TrunkData:
         x_batch: np.ndarray,
         u_batch: np.ndarray,
         x_new_batch: np.ndarray,
+        traj_ID: int = 0,
     ) -> None:
         """
         Add a batch of data points to the dataset.
@@ -222,6 +230,9 @@ class TrunkData:
             batch_data[col] = u_batch[:, i]
         for i, col in enumerate(self.state_new_cols):
             batch_data[col] = x_new_batch[:, i]
+        
+        # Add trajectory ID
+        batch_data[self.traj_ID_col] = np.full(batch_size, traj_ID)
 
         # Create and append the new batch
         batch_df = pd.DataFrame(batch_data)
@@ -243,7 +254,7 @@ class TrunkData:
         Args:
             filename: Path to the CSV file to load
         """
-        self.dataframe = pd.read_csv(filename)
+        self.dataframe = pd.read_csv(filename, index_col=False)
 
         # Infer column types
         cols = list(self.dataframe.columns)
@@ -259,6 +270,12 @@ class TrunkData:
 
         self.state_cols = [col for col in remaining_cols if not col.endswith("_new")]
         self.state_new_cols = [col for col in remaining_cols if col.endswith("_new")]
+
+        # Get trajectory ID column
+        if "traj_ID" in cols:
+            self.traj_ID_col = "traj_ID"
+        else:
+            self.traj_ID_col = None
 
         # Sort columns to ensure consistent ordering
         self.state_cols.sort()
@@ -289,6 +306,40 @@ class TrunkData:
             output_cols = self.state_new_cols
 
         return TrunkTorchDataset(self.dataframe, input_cols, output_cols)
+    
+    def convert_to_arrays(
+        self
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Convert the data to numpy arrays, split by trajectory ID.
+        # TODO: add padding in case of different trajectory lengths
+
+        Returns:
+            Tuple of (time_array, state_array, control_array, state_new_array)
+        """
+        # Get unique trajectory IDs
+        traj_IDs = self.dataframe[self.traj_ID_col].unique()
+
+        # Initialize arrays
+        time_array = []
+        state_array = []
+        control_array = []
+        state_new_array = []
+
+        # Iterate over trajectories
+        for traj_ID in traj_IDs:
+            traj_data = self.dataframe[self.dataframe[self.traj_ID_col] == traj_ID]
+            time_array.append(traj_data[self.time_col].values)
+            state_array.append(traj_data[self.state_cols].values.T)
+            control_array.append(traj_data[self.control_cols].values.T)
+            state_new_array.append(traj_data[self.state_new_cols].values.T)
+        
+        time_array = np.array(time_array)  # shape: (num_trajectories, num_timesteps)
+        state_array = np.array(state_array)  # shape: (num_trajectories, state_dim, num_timesteps)
+        control_array = np.array(control_array)  # shape: (num_trajectories, control_dim, num_timesteps)
+        state_new_array = np.array(state_new_array)  # shape: (num_trajectories, state_dim, num_timesteps)
+
+        return time_array, state_array, control_array, state_new_array
 
     def get_data_at_time(self, t: float) -> np.ndarray:
         """
