@@ -64,9 +64,10 @@ class Simulator:
     def reset(self):
         self.prev_states = None
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
-        mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
+        #mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
 
         self.positions = None
+        self.prev_positions = None
         self._set_states()
 
     def reset_time(self):
@@ -92,19 +93,20 @@ class Simulator:
         #TODO: Use mujoco velocity instead of computing it manually
         #Provides velocity as v_k = (x_{k} - x_{k-1})/dt
         return np.concatenate([self.positions, self.velocities], axis=1)
-    
-    def _set_states(self):
-        positions = np.array(
+    def get_current_positions(self):
+        return np.array(
             [self.data.body(b).xpos.copy().tolist() for b in self.track_bodies]
         )
+    
+    def _set_states(self):
+        self.positions = self.get_current_positions()
 
-        
         # Reporting initial velocities as zero
-        if self.positions is None:
-            self.positions = positions
+        # Valid since the system is at rest at the beginning
+        if self.prev_positions is None:
+            self.prev_positions = self.positions
 
-        self.velocities = (positions - self.positions)/self.timestep
-        self.positions = positions
+        self.velocities = (self.positions - self.prev_positions)/self.sim_timestep
     
     def get_time(self):
         return self.data.time
@@ -136,7 +138,10 @@ class Simulator:
 
         for i in range(self.sim_steps):
             mujoco.mj_step(self.model, self.data)
-        
+
+            if i == self.sim_steps - 2:
+                self.prev_positions = self.get_current_positions()
+
         #mujoco.mj_kinematics(self.model, self.data)
 
         self._set_states()
