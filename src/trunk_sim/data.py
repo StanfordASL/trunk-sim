@@ -261,6 +261,9 @@ class TrunkData:
         if "t" in cols:
             self.time_col = "t"
             cols.remove("t")
+        if "traj_ID" in cols:
+            self.traj_ID_col = "traj_ID"
+            cols.remove("traj_ID")
 
         # Identify control columns first (assume they start with 'u')
         self.control_cols = [col for col in cols if col.startswith("u")]
@@ -270,17 +273,6 @@ class TrunkData:
 
         self.state_cols = [col for col in remaining_cols if not col.endswith("_new")]
         self.state_new_cols = [col for col in remaining_cols if col.endswith("_new")]
-
-        # Get trajectory ID column
-        if "traj_ID" in cols:
-            self.traj_ID_col = "traj_ID"
-        else:
-            self.traj_ID_col = None
-
-        # Sort columns to ensure consistent ordering
-        self.state_cols.sort()
-        self.state_new_cols.sort()
-        self.control_cols.sort()
 
         self.state_dim = len(self.state_cols)
         self.control_dim = len(self.control_cols)
