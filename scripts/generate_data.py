@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from trunk_sim.simulator import TrunkSimulator
 from trunk_sim.data import TrunkData
-from trunk_sim.policy import TrunkPolicy, HarmonicPolicy, RandomWalkPolicy, steady_state_input
+from trunk_sim.policy import HarmonicPolicy, RandomWalkPolicy, steady_state_input
 from trunk_sim.rollout import rollout
 
 
@@ -30,7 +30,7 @@ def main(args):
     ):
         os.makedirs(os.path.join(args.data_folder, "videos"))
 
-    for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
+    for rollout_idx in tqdm(range(args.num_rollouts)):
         if args.policy == "harmonic":
             policy = HarmonicPolicy(
                 frequency_range=[0.0,2.0], amplitude_range=[0.0,10.0], phase_range=[0.0,2*np.pi], num_segments=simulator.num_segments
@@ -59,7 +59,8 @@ def main(args):
             video_filename=os.path.join(
                 args.data_folder, "videos", f"rollout_{rollout_idx}.mp4"
             ),
-            stop_at_convergence=True
+            stop_at_convergence=True,
+            traj_ID=rollout_idx
         )
 
     data.save_to_csv(os.path.join(args.data_folder, "data.csv"))
