@@ -65,18 +65,18 @@ class HarmonicPolicy(TrunkPolicy):
     Simple periodic policy that returns a constant control input.
     """
 
-    def __init__(self, frequency=1.0, amplitude=1.0, phase=0.0, num_segments=3):
+    def __init__(self, frequency_range, amplitude_range, phase_range, num_segments=3):
         """
         Initialize the policy with a given discrete-time frequency and amplitude.
         """
-        print(f"HarmonicPolicy: frequency={frequency}, amplitude={amplitude}, phase={phase}, num_segments={num_segments}")
-        self.frequency = frequency
-        self.amplitude = amplitude
-        self.phase = phase
-        self.policy = lambda t, _: amplitude * np.array([[
-                np.sin(2 * np.pi * frequency * t + self.phase),
-                np.cos(2 * np.pi * frequency * t + self.phase),
-            ]] * num_segments)
+        self.frequencies = [np.random.uniform(*frequency_range) for _ in range(num_segments)]
+        self.amplitudes = [np.random.uniform(*amplitude_range) for _ in range(num_segments)]
+        self.phases = [np.random.uniform(*phase_range) for _ in range(num_segments)]
+        self.signs = [np.random.choice([-1, 1]) for _ in range(num_segments)]
+        self.policy = lambda t, _: np.array([[
+            self.amplitudes[i] * np.sin(self.signs[i] * 2 * np.pi * self.frequencies[i] * t + self.phases[i]),
+            self.amplitudes[i] * np.cos(self.signs[i] * 2 * np.pi * self.frequencies[i] * t + self.phases[i]),
+            ] for i in range(num_segments)])
 
         super().__init__(self.policy)
 
@@ -105,6 +105,7 @@ class RandomWalkPolicy(TrunkPolicy):
         return new_input
 
 def steady_state_input(num_segments, num_controls_per_segment=2, amplitude=1.0, angle=1):
+    print(f"steady_state_input: num_segments={num_segments}, num_controls_per_segment={num_controls_per_segment}, amplitude={amplitude}, angle={angle}")
     """
     Get a steady state control input for a given number of segments and controls per segment.
     """

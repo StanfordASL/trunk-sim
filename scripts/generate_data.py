@@ -33,7 +33,7 @@ def main(args):
     for rollout_idx in tqdm(range(1, args.num_rollouts + 1)):
         if args.policy == "harmonic":
             policy = HarmonicPolicy(
-                frequency=np.random.uniform(0.01, 1.0), amplitude=np.random.uniform(0.01,2.0), phase=np.random.uniform(0,2*np.pi), num_segments=simulator.num_segments
+                frequency_range=[0.0,2.0], amplitude_range=[0.0,10.0], phase_range=[0.0,2*np.pi], num_segments=simulator.num_segments
             )
         elif args.policy == "random_walk":
             policy = RandomWalkPolicy()
@@ -46,8 +46,8 @@ def main(args):
             angle = np.random.uniform(0,2*np.pi)
             sign = np.random.choice([-1,1])
             simulator.set_initial_steady_state(
-                steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,12.0), angle=angle),
-                kick=steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,10.0), angle=angle + np.pi/2 * sign),
+                steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,20.0), angle=angle),
+                kick=steady_state_input(simulator.num_segments, amplitude=np.random.uniform(0.0,10.0), angle=angle + np.pi/2 * sign) if args.kick else None,
             )
 
         rollout(
@@ -96,6 +96,11 @@ def parse_args():
         "--init_steady_state",
         action="store_true",
         help="Initialize the trunk in a steady state configuration.",
+    )
+    parser.add_argument(
+        "--kick",
+        action="store_true",
+        help="Apply a kick to the trunk after reaching a steady-state.",
     )
     parser.add_argument(
         "--num_segments", type=int, default=3, help="Number of segments in the trunk"

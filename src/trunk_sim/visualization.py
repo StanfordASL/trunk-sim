@@ -73,3 +73,18 @@ def visualize_velocities_from_data(df: pd.DataFrame, links: Optional[List[int]] 
     ax[2].legend()
     
     return fig
+
+def visualize_inputs_from_data(df: pd.DataFrame):
+    fig, ax = plt.subplots(2, 3, figsize=(15, 5))
+    
+    # add more space between subplots
+    fig.subplots_adjust(hspace=0.3)
+
+    for i, dim in enumerate(["x", "y"]):
+        for j in range(3):
+            ax[i,j].plot(df["t"], df[f"u{dim}{j+1}"], label=f"$u_{dim}{j+1}$")
+            ax[i,j].set_xlabel('Time')
+            ax[i,j].set_ylabel(f'Input {dim}{j+1}')
+            ax[i,j].legend()
+
+    return fig
