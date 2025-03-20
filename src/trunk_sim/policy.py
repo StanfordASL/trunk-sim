@@ -104,13 +104,15 @@ class RandomWalkPolicy(TrunkPolicy):
 
         return new_input
 
-def steady_state_input(num_segments, num_controls_per_segment=2, amplitude=1.0, angle=1):
-    print(f"steady_state_input: num_segments={num_segments}, num_controls_per_segment={num_controls_per_segment}, amplitude={amplitude}, angle={angle}")
+def steady_state_input(num_segments, num_controls_per_segment=2, amplitude=1.0, angle=1, verbose=False):
     """
     Get a steady state control input for a given number of segments and controls per segment.
     """
     assert num_controls_per_segment == 2, "Only implemented for 2 controls per segment"
 
     vec = np.array([np.cos(angle), np.sin(angle)])
+    
+    if verbose:
+        print(f"steady_state_input: num_segments={num_segments}, num_controls_per_segment={num_controls_per_segment}, amplitude={amplitude}, angle={angle}")
 
     return np.vstack([vec for _ in range(num_segments)]) * amplitude
