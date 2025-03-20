@@ -29,6 +29,7 @@ class Simulator:
         model_path: Optional[str] = None,
         model_xml: Optional[str] = None,
         timestep: Optional[float] = 0.01,
+        track_bodies: Optional[list] = None,
     ):
         # Load model
         if model_xml and not model_path:
@@ -43,7 +44,9 @@ class Simulator:
         self.timestep = timestep  # Measured state and input timestep
         self.sim_timestep = 0.002  # Mujoco simulation timestep
 
-        assert self.sim_timestep <= self.timestep, "Timestep must be greater than Mujoco timestep."
+        assert (
+            self.sim_timestep <= self.timestep
+        ), "Timestep must be greater than Mujoco timestep."
 
         self.sim_steps = self.timestep / self.sim_timestep
         if self.sim_steps % 1 != 0:
@@ -51,12 +54,21 @@ class Simulator:
         else:
             self.sim_steps = int(self.sim_steps)
 
-        self.reset()
-        self.prev_states = None
+        if track_bodies:
+            self.track_bodies = track_bodies
+        else:
+            self.track_bodies = range(self.model.nbody)
 
+        self.reset()
+    
     def reset(self):
+        self.prev_states = None
         mujoco.mj_resetData(self.model, self.data)  # Reset state and time.
-        mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
+        #mujoco.mj_kinematics(self.model, self.data)  # TODO: Verify if this is necessary
+
+        self.positions = None
+        self.prev_positions = None
+        self._set_states()
 
     def reset_time(self):
         self.data.time = 0
@@ -67,34 +79,36 @@ class Simulator:
         if qvel is not None:
             self.data.qvel[:] = qvel
 
-    def step(self, control_input=None):
-        t = self.get_time()
-        x = self.get_states()
-        u = self.set_control_input(control_input)
-
-        for i in range(self.sim_steps):
-            mujoco.mj_step(self.model, self.data)
-
-        x_new = self.get_states()
-
-        return t, x, u, x_new
-
-    def has_converged(self, threshold=1e-6):
+    def has_converged(self, threshold=1e-3):
         if self.prev_states is None:
             self.prev_states = self.get_states()
             return False
-        
+
         if np.linalg.norm(self.prev_states - self.get_states()) < threshold:
             return True
         else:
             return False
 
     def get_states(self):
-        positions = np.array([self.data.body(b).xpos.copy().tolist() for b in range(4, self.model.nbody)])
-        # TODO: Add velocities, for now zeros
-        velocities = np.zeros_like(positions)
-        return np.concatenate([positions, velocities], axis=1)
+        # TODO: Mujoco supports getting velocities directly but requires coordinate transformation
+        return np.concatenate([self.positions, self.velocities], axis=1)
+    
+    def get_current_positions(self):
+        return np.array(
+            [self.data.body(b).xpos.copy().tolist() for b in self.track_bodies]
+        )
+    
+    def _set_states(self):
+        self.positions = self.get_current_positions()
 
+        # Reporting initial velocities as zero
+        # Valid since the system is at rest at the beginning
+        if self.prev_positions is None:
+            self.prev_positions = self.positions
+
+        # Calculate velocity as v_k = (x_{k} - x_{k-1}) / dt but with short time steps from mujoco
+        self.velocities = (self.positions - self.prev_positions) / self.sim_timestep
+    
     def get_time(self):
         return self.data.time
 
@@ -103,18 +117,38 @@ class Simulator:
             self.data.ctrl[:] = control_input
         else:
             self.data.ctrl[:] = 0
-        
+
         return self.data.ctrl
 
-    def set_initial_steady_state(self, steady_state_control_input, max_duration=10):
+    def set_initial_steady_state(self, steady_state_control_input, kick=None, max_duration=10.0, kick_duration=0.01):
         self.reset()
-        
-        print("Setting steady state...")
+
         while not self.has_converged() and self.data.time < max_duration:
             self.step(steady_state_control_input)
+            #print(self.data.actuator_force)
 
-        print("Steady state reached.")
+        current_time = self.data.time
+        if kick is not None:
+            while self.data.time < current_time + kick_duration:
+                self.step(kick)
 
+    def step(self, control_input=None):
+        t = self.get_time()
+        x = self.get_states()
+        u = self.set_control_input(control_input)
+
+        for i in range(self.sim_steps):
+            mujoco.mj_step(self.model, self.data)
+
+            if i == self.sim_steps - 2:
+                self.prev_positions = self.get_current_positions()
+
+        self._set_states()
+
+        x_new = self.get_states()
+
+        return t, x, u, x_new
+            
 class TrunkSimulator(Simulator):
     def __init__(
         self,
@@ -123,35 +157,60 @@ class TrunkSimulator(Simulator):
         tip_mass: float = 0.5,
         timestep: Optional[float] = 0.01,
     ):
-        
+
         self.num_controls_per_segment = 2
         self.num_controls_per_segment_mujoco = 4
         self.num_segments = num_segments
         self.num_links_per_segment = num_links_per_segment
-        self.num_links = num_segments*num_links_per_segment
-        
+        self.num_links = num_segments * num_links_per_segment
+
         # Mapping from control input to mujoco actuators
-        self.input_map = np.array([[1, 0], 
-                                   [-1, 0], 
-                                   [0, 1], 
-                                   [0, -1]]) # (num_controls_per_segment_mujoco x num_controls_per_segment)
-        
-        self.inverse_input_map = np.linalg.pinv(self.input_map) # (num_controls_per_segment x num_controls_per_segment_mujoco)
+        self.input_map = np.array(
+            [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        )  # (num_controls_per_segment_mujoco x num_controls_per_segment)
+
+        self.inverse_input_map = np.linalg.pinv(
+            self.input_map
+        )  # (num_controls_per_segment x num_controls_per_segment_mujoco)
 
         super().__init__(
-            model_xml=generate_trunk_model(num_links=self.num_links, tip_mass=tip_mass),
+            model_xml=generate_trunk_model(
+                num_segments=num_segments,
+                num_links_per_segment=num_links_per_segment,
+                tip_mass=tip_mass,
+            ),
             timestep=timestep,
         )
 
+        self.track_bodies = self.get_link_bodies()
+        self.reset()
 
+    def get_link_bodies(self):
+        track_bodies = []
+        for i in range(self.model.nbody):
+            name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, i)
+            if "link" in name:
+                track_bodies.append(i)
+                
+        return track_bodies
+    
     def set_control_input(self, control_input=None):
         """
         control_input: np.array of shape (num_segments, num_controls_per_segment)
         """
 
-        # u_mujoco is (num_segments x num_controls_per_segment_mujoco).flatten()
-        u_mujoco = (control_input @ self.input_map.T).flatten() if control_input is not None else None
-        u = super().set_control_input(u_mujoco).reshape(-1, self.num_controls_per_segment_mujoco) @ self.inverse_input_map.T
+        # shape of u_mujoco: (num_segments x num_controls_per_segment_mujoco).flatten()
+        u_mujoco = (
+            (control_input @ self.input_map.T).flatten()
+            if control_input is not None
+            else None
+        )
+        u = (
+            super()
+            .set_control_input(u_mujoco)
+            .reshape(-1, self.num_controls_per_segment_mujoco)
+            @ self.inverse_input_map.T
+        )
 
         return u
-    
+

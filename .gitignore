@@ -181,3 +181,10 @@ set_venv.sh
 
 # Mujoco files
 MUJOCO_LOG.TXT
+
+# Videos
+*.mp4
+
+# Data
+*.csv
+data/
