@@ -199,6 +199,9 @@ class TrunkSimulator(Simulator):
         control_input: np.array of shape (num_segments, num_controls_per_segment)
         """
 
+        if control_input is not None:
+            assert control_input.shape == (self.num_segments, self.num_controls_per_segment), f"Invalid control input shape. Expected ({self.num_segments}, {self.num_controls_per_segment}), got {control_input.shape}."
+        
         # shape of u_mujoco: (num_segments x num_controls_per_segment_mujoco).flatten()
         u_mujoco = (
             (control_input @ self.input_map.T).flatten()
