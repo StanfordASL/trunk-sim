@@ -13,13 +13,14 @@ def payload_body(mass=0.1, size=0.1, offset=0.1):
 def link(
     index,
     inner="",
-    size=0.1,
+    size=2.1,
     radius=0.005,
     density=0.01,
     damping=1.0,
     armature=0.01,
     stiffness=20.0,
     joint=True,
+    spacing=2,
 ):
     #assert size > radius, "Size must be greater than radius"
     joint_str = (
@@ -30,7 +31,7 @@ def link(
     return f"""
         <body name="link_{index}" pos="{size} 0 0">
             {joint_str}
-            <geom name="geom_{index}" size="{radius} {size/2}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="{GEOM_COLOR}"/>
+            <geom name="geom_{index}" size="{radius} {size/spacing}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="{GEOM_COLOR}"/>
             <site name="site_y_front_{index}" pos="0 {radius} 0"/> 
             <site name="site_y_back_{index}" pos="0 -{radius} 0"/>
             <site name="site_z_front_{index}" pos="0 0 {radius}"/> 
@@ -76,6 +77,9 @@ def base(bodies, tendons="", muscles="", contacts="", sensors=""):
             </plugin>
         </extension>
 
+        <visual>
+            <global offwidth="1920" offheight="1080" elevation="0"/>
+        </visual> 
         <asset>
             <texture type="skybox" builtin="gradient" rgb1=".6 .8 1" rgb2=".6 .8 1" width="1" height="1"/>
         </asset>
@@ -108,7 +112,7 @@ def base(bodies, tendons="", muscles="", contacts="", sensors=""):
 
 
 def generate_trunk_model(
-    num_segments, num_links_per_segment, tip_mass=0.1, radius=0.025, length=0.32
+    num_segments, num_links_per_segment, tip_mass=0.1, radius=0.025, length=0.32, spacing=2.0
 ):
     num_links = num_segments * num_links_per_segment
     size = length / num_links
@@ -120,7 +124,7 @@ def generate_trunk_model(
     )
 
     for i in range(num_links, 1, -1):
-        bodies_string = link(i, inner=bodies_string, size=size, radius=radius) #link_0 has no DOFs
+        bodies_string = link(i, inner=bodies_string, size=size, radius=radius, spacing=spacing) #link_0 has no DOFs
 
     bodies_string = link(1, inner=bodies_string, joint=False, size=size, radius=radius)
 
