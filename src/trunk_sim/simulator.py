@@ -159,6 +159,7 @@ class TrunkSimulator(Simulator):
         radius: float = 0.025,
         length: float = 0.32,
         spacing: float = 2.0,
+        tip_size: Optional[float] = None,
     ):
 
         self.num_controls_per_segment = 2
@@ -184,6 +185,7 @@ class TrunkSimulator(Simulator):
                 radius=radius,
                 length=length,
                 spacing=spacing,
+                tip_size=tip_size,
             ),
             timestep=timestep,
         )

@@ -13,7 +13,7 @@ from trunk_sim.rollout import rollout
 
 def main(args):
     simulator = TrunkSimulator(
-        num_segments=args.num_segments, tip_mass=args.tip_mass, radius=args.radius, length=args.length, spacing=args.spacing
+        num_segments=args.num_segments, tip_mass=args.tip_mass, radius=args.radius, length=args.length, spacing=args.spacing, tip_size=args.tip_size
     )
 
     if not os.path.exists(args.data_folder):
@@ -80,6 +80,10 @@ def parse_args():
     parser.add_argument(
         "--num_images", type=int, default=10, help="Number of images to render"
     )
+    parser.add_argument(
+        "--tip_size", type=float, default=None, help="Size of the trunk tip"
+    )
+
     return parser.parse_args()
 
 

@@ -1,0 +1,736 @@
+
+    <mujoco model="trunk">
+        <compiler angle="radian"/>
+        <option timestep="0.002"/>
+        <extension>
+            <plugin plugin="mujoco.elasticity.cable">
+            <instance name="compositeactuated">
+                <config key="twist" value="1e8"/>
+                <config key="bend" value="1e8"/>
+                <config key="vmax" value="0"/>
+            </instance>
+            </plugin>
+        </extension>
+
+        <visual>
+            <global offwidth="1920" offheight="1080" elevation="0"/>
+        </visual> 
+        <asset>
+            <texture type="skybox" builtin="gradient" rgb1=".6 .8 1" rgb2=".6 .8 1" width="1" height="1"/>
+        </asset>
+
+        <worldbody>
+            <light pos="0 -1 -1" dir="0 -1 -1" diffuse="1 1 1"/>
+            <body name="base" pos="0 0 0" quat="0 -0.707107 0 0.707107">
+                <geom name="base" size="0.005 0.005" pos="0.005 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.8 0.2 0.1 1"/>
+                
+        <body name="link_1" pos="0.030000000000000002 0 0">
+            
+            <geom name="geom_1" size="0.03 0.015000000000000001" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_1" pos="0 0.03 0"/> 
+            <site name="site_y_back_1" pos="0 -0.03 0"/>
+            <site name="site_z_front_1" pos="0 0 0.03"/> 
+            <site name="site_z_back_1" pos="0 0 -0.03"/>
+            
+        <body name="link_2" pos="0.030000000000000002 0 0">
+            <joint name="joint_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_2" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_2" pos="0 0.03 0"/> 
+            <site name="site_y_back_2" pos="0 -0.03 0"/>
+            <site name="site_z_front_2" pos="0 0 0.03"/> 
+            <site name="site_z_back_2" pos="0 0 -0.03"/>
+            
+        <body name="link_3" pos="0.030000000000000002 0 0">
+            <joint name="joint_3" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_3" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_3" pos="0 0.03 0"/> 
+            <site name="site_y_back_3" pos="0 -0.03 0"/>
+            <site name="site_z_front_3" pos="0 0 0.03"/> 
+            <site name="site_z_back_3" pos="0 0 -0.03"/>
+            
+        <body name="link_4" pos="0.030000000000000002 0 0">
+            <joint name="joint_4" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_4" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_4" pos="0 0.03 0"/> 
+            <site name="site_y_back_4" pos="0 -0.03 0"/>
+            <site name="site_z_front_4" pos="0 0 0.03"/> 
+            <site name="site_z_back_4" pos="0 0 -0.03"/>
+            
+        <body name="link_5" pos="0.030000000000000002 0 0">
+            <joint name="joint_5" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_5" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_5" pos="0 0.03 0"/> 
+            <site name="site_y_back_5" pos="0 -0.03 0"/>
+            <site name="site_z_front_5" pos="0 0 0.03"/> 
+            <site name="site_z_back_5" pos="0 0 -0.03"/>
+            
+        <body name="link_6" pos="0.030000000000000002 0 0">
+            <joint name="joint_6" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_6" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_6" pos="0 0.03 0"/> 
+            <site name="site_y_back_6" pos="0 -0.03 0"/>
+            <site name="site_z_front_6" pos="0 0 0.03"/> 
+            <site name="site_z_back_6" pos="0 0 -0.03"/>
+            
+        <body name="link_7" pos="0.030000000000000002 0 0">
+            <joint name="joint_7" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_7" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_7" pos="0 0.03 0"/> 
+            <site name="site_y_back_7" pos="0 -0.03 0"/>
+            <site name="site_z_front_7" pos="0 0 0.03"/> 
+            <site name="site_z_back_7" pos="0 0 -0.03"/>
+            
+        <body name="link_8" pos="0.030000000000000002 0 0">
+            <joint name="joint_8" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_8" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_8" pos="0 0.03 0"/> 
+            <site name="site_y_back_8" pos="0 -0.03 0"/>
+            <site name="site_z_front_8" pos="0 0 0.03"/> 
+            <site name="site_z_back_8" pos="0 0 -0.03"/>
+            
+        <body name="link_9" pos="0.030000000000000002 0 0">
+            <joint name="joint_9" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_9" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_9" pos="0 0.03 0"/> 
+            <site name="site_y_back_9" pos="0 -0.03 0"/>
+            <site name="site_z_front_9" pos="0 0 0.03"/> 
+            <site name="site_z_back_9" pos="0 0 -0.03"/>
+            
+        <body name="link_10" pos="0.030000000000000002 0 0">
+            <joint name="joint_10" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_10" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_10" pos="0 0.03 0"/> 
+            <site name="site_y_back_10" pos="0 -0.03 0"/>
+            <site name="site_z_front_10" pos="0 0 0.03"/> 
+            <site name="site_z_back_10" pos="0 0 -0.03"/>
+            
+        <body name="link_11" pos="0.030000000000000002 0 0">
+            <joint name="joint_11" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_11" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_11" pos="0 0.03 0"/> 
+            <site name="site_y_back_11" pos="0 -0.03 0"/>
+            <site name="site_z_front_11" pos="0 0 0.03"/> 
+            <site name="site_z_back_11" pos="0 0 -0.03"/>
+            
+        <body name="link_12" pos="0.030000000000000002 0 0">
+            <joint name="joint_12" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_12" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_12" pos="0 0.03 0"/> 
+            <site name="site_y_back_12" pos="0 -0.03 0"/>
+            <site name="site_z_front_12" pos="0 0 0.03"/> 
+            <site name="site_z_back_12" pos="0 0 -0.03"/>
+            
+        <body name="link_13" pos="0.030000000000000002 0 0">
+            <joint name="joint_13" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_13" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_13" pos="0 0.03 0"/> 
+            <site name="site_y_back_13" pos="0 -0.03 0"/>
+            <site name="site_z_front_13" pos="0 0 0.03"/> 
+            <site name="site_z_back_13" pos="0 0 -0.03"/>
+            
+        <body name="link_14" pos="0.030000000000000002 0 0">
+            <joint name="joint_14" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_14" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_14" pos="0 0.03 0"/> 
+            <site name="site_y_back_14" pos="0 -0.03 0"/>
+            <site name="site_z_front_14" pos="0 0 0.03"/> 
+            <site name="site_z_back_14" pos="0 0 -0.03"/>
+            
+        <body name="link_15" pos="0.030000000000000002 0 0">
+            <joint name="joint_15" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_15" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_15" pos="0 0.03 0"/> 
+            <site name="site_y_back_15" pos="0 -0.03 0"/>
+            <site name="site_z_front_15" pos="0 0 0.03"/> 
+            <site name="site_z_back_15" pos="0 0 -0.03"/>
+            
+        <body name="link_16" pos="0.030000000000000002 0 0">
+            <joint name="joint_16" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_16" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_16" pos="0 0.03 0"/> 
+            <site name="site_y_back_16" pos="0 -0.03 0"/>
+            <site name="site_z_front_16" pos="0 0 0.03"/> 
+            <site name="site_z_back_16" pos="0 0 -0.03"/>
+            
+        <body name="link_17" pos="0.030000000000000002 0 0">
+            <joint name="joint_17" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_17" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_17" pos="0 0.03 0"/> 
+            <site name="site_y_back_17" pos="0 -0.03 0"/>
+            <site name="site_z_front_17" pos="0 0 0.03"/> 
+            <site name="site_z_back_17" pos="0 0 -0.03"/>
+            
+        <body name="link_18" pos="0.030000000000000002 0 0">
+            <joint name="joint_18" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_18" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_18" pos="0 0.03 0"/> 
+            <site name="site_y_back_18" pos="0 -0.03 0"/>
+            <site name="site_z_front_18" pos="0 0 0.03"/> 
+            <site name="site_z_back_18" pos="0 0 -0.03"/>
+            
+        <body name="link_19" pos="0.030000000000000002 0 0">
+            <joint name="joint_19" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_19" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_19" pos="0 0.03 0"/> 
+            <site name="site_y_back_19" pos="0 -0.03 0"/>
+            <site name="site_z_front_19" pos="0 0 0.03"/> 
+            <site name="site_z_back_19" pos="0 0 -0.03"/>
+            
+        <body name="link_20" pos="0.030000000000000002 0 0">
+            <joint name="joint_20" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_20" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_20" pos="0 0.03 0"/> 
+            <site name="site_y_back_20" pos="0 -0.03 0"/>
+            <site name="site_z_front_20" pos="0 0 0.03"/> 
+            <site name="site_z_back_20" pos="0 0 -0.03"/>
+            
+        <body name="link_21" pos="0.030000000000000002 0 0">
+            <joint name="joint_21" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_21" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_21" pos="0 0.03 0"/> 
+            <site name="site_y_back_21" pos="0 -0.03 0"/>
+            <site name="site_z_front_21" pos="0 0 0.03"/> 
+            <site name="site_z_back_21" pos="0 0 -0.03"/>
+            
+        <body name="link_22" pos="0.030000000000000002 0 0">
+            <joint name="joint_22" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_22" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_22" pos="0 0.03 0"/> 
+            <site name="site_y_back_22" pos="0 -0.03 0"/>
+            <site name="site_z_front_22" pos="0 0 0.03"/> 
+            <site name="site_z_back_22" pos="0 0 -0.03"/>
+            
+        <body name="link_23" pos="0.030000000000000002 0 0">
+            <joint name="joint_23" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_23" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_23" pos="0 0.03 0"/> 
+            <site name="site_y_back_23" pos="0 -0.03 0"/>
+            <site name="site_z_front_23" pos="0 0 0.03"/> 
+            <site name="site_z_back_23" pos="0 0 -0.03"/>
+            
+        <body name="link_24" pos="0.030000000000000002 0 0">
+            <joint name="joint_24" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_24" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_24" pos="0 0.03 0"/> 
+            <site name="site_y_back_24" pos="0 -0.03 0"/>
+            <site name="site_z_front_24" pos="0 0 0.03"/> 
+            <site name="site_z_back_24" pos="0 0 -0.03"/>
+            
+        <body name="link_25" pos="0.030000000000000002 0 0">
+            <joint name="joint_25" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_25" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_25" pos="0 0.03 0"/> 
+            <site name="site_y_back_25" pos="0 -0.03 0"/>
+            <site name="site_z_front_25" pos="0 0 0.03"/> 
+            <site name="site_z_back_25" pos="0 0 -0.03"/>
+            
+        <body name="link_26" pos="0.030000000000000002 0 0">
+            <joint name="joint_26" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_26" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_26" pos="0 0.03 0"/> 
+            <site name="site_y_back_26" pos="0 -0.03 0"/>
+            <site name="site_z_front_26" pos="0 0 0.03"/> 
+            <site name="site_z_back_26" pos="0 0 -0.03"/>
+            
+        <body name="link_27" pos="0.030000000000000002 0 0">
+            <joint name="joint_27" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_27" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_27" pos="0 0.03 0"/> 
+            <site name="site_y_back_27" pos="0 -0.03 0"/>
+            <site name="site_z_front_27" pos="0 0 0.03"/> 
+            <site name="site_z_back_27" pos="0 0 -0.03"/>
+            
+        <body name="link_28" pos="0.030000000000000002 0 0">
+            <joint name="joint_28" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_28" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_28" pos="0 0.03 0"/> 
+            <site name="site_y_back_28" pos="0 -0.03 0"/>
+            <site name="site_z_front_28" pos="0 0 0.03"/> 
+            <site name="site_z_back_28" pos="0 0 -0.03"/>
+            
+        <body name="link_29" pos="0.030000000000000002 0 0">
+            <joint name="joint_29" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_29" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_29" pos="0 0.03 0"/> 
+            <site name="site_y_back_29" pos="0 -0.03 0"/>
+            <site name="site_z_front_29" pos="0 0 0.03"/> 
+            <site name="site_z_back_29" pos="0 0 -0.03"/>
+            
+        <body name="link_30" pos="0.030000000000000002 0 0">
+            <joint name="joint_30" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" armature="0.01" damping="1.0" stiffness="20.0"/>
+            <geom name="geom_30" size="0.03 0.003" density="0.01" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="0 0 0 1"/>
+            <site name="site_y_front_30" pos="0 0.03 0"/> 
+            <site name="site_y_back_30" pos="0 -0.03 0"/>
+            <site name="site_z_front_30" pos="0 0 0.03"/> 
+            <site name="site_z_back_30" pos="0 0 -0.03"/>
+            
+        <body name="payload" pos="0.030000000000000002 0 0">
+            <geom name="payload_geom" size="0.3" mass="0.1" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="sphere" rgba="0 1 0 1"/>
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+        </body>
+    
+            </body>
+        </worldbody>
+
+        
+        <tendon>
+            <spatial name="tendon_1_y_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_front_1"/>
+<site site="site_y_front_2"/>
+<site site="site_y_front_3"/>
+<site site="site_y_front_4"/>
+<site site="site_y_front_5"/>
+<site site="site_y_front_6"/>
+<site site="site_y_front_7"/>
+<site site="site_y_front_8"/>
+<site site="site_y_front_9"/>
+<site site="site_y_front_10"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_1_y_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_back_1"/>
+<site site="site_y_back_2"/>
+<site site="site_y_back_3"/>
+<site site="site_y_back_4"/>
+<site site="site_y_back_5"/>
+<site site="site_y_back_6"/>
+<site site="site_y_back_7"/>
+<site site="site_y_back_8"/>
+<site site="site_y_back_9"/>
+<site site="site_y_back_10"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_1_z_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_front_1"/>
+<site site="site_z_front_2"/>
+<site site="site_z_front_3"/>
+<site site="site_z_front_4"/>
+<site site="site_z_front_5"/>
+<site site="site_z_front_6"/>
+<site site="site_z_front_7"/>
+<site site="site_z_front_8"/>
+<site site="site_z_front_9"/>
+<site site="site_z_front_10"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_1_z_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_back_1"/>
+<site site="site_z_back_2"/>
+<site site="site_z_back_3"/>
+<site site="site_z_back_4"/>
+<site site="site_z_back_5"/>
+<site site="site_z_back_6"/>
+<site site="site_z_back_7"/>
+<site site="site_z_back_8"/>
+<site site="site_z_back_9"/>
+<site site="site_z_back_10"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_2_y_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_front_1"/>
+<site site="site_y_front_2"/>
+<site site="site_y_front_3"/>
+<site site="site_y_front_4"/>
+<site site="site_y_front_5"/>
+<site site="site_y_front_6"/>
+<site site="site_y_front_7"/>
+<site site="site_y_front_8"/>
+<site site="site_y_front_9"/>
+<site site="site_y_front_10"/>
+<site site="site_y_front_11"/>
+<site site="site_y_front_12"/>
+<site site="site_y_front_13"/>
+<site site="site_y_front_14"/>
+<site site="site_y_front_15"/>
+<site site="site_y_front_16"/>
+<site site="site_y_front_17"/>
+<site site="site_y_front_18"/>
+<site site="site_y_front_19"/>
+<site site="site_y_front_20"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_2_y_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_back_1"/>
+<site site="site_y_back_2"/>
+<site site="site_y_back_3"/>
+<site site="site_y_back_4"/>
+<site site="site_y_back_5"/>
+<site site="site_y_back_6"/>
+<site site="site_y_back_7"/>
+<site site="site_y_back_8"/>
+<site site="site_y_back_9"/>
+<site site="site_y_back_10"/>
+<site site="site_y_back_11"/>
+<site site="site_y_back_12"/>
+<site site="site_y_back_13"/>
+<site site="site_y_back_14"/>
+<site site="site_y_back_15"/>
+<site site="site_y_back_16"/>
+<site site="site_y_back_17"/>
+<site site="site_y_back_18"/>
+<site site="site_y_back_19"/>
+<site site="site_y_back_20"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_2_z_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_front_1"/>
+<site site="site_z_front_2"/>
+<site site="site_z_front_3"/>
+<site site="site_z_front_4"/>
+<site site="site_z_front_5"/>
+<site site="site_z_front_6"/>
+<site site="site_z_front_7"/>
+<site site="site_z_front_8"/>
+<site site="site_z_front_9"/>
+<site site="site_z_front_10"/>
+<site site="site_z_front_11"/>
+<site site="site_z_front_12"/>
+<site site="site_z_front_13"/>
+<site site="site_z_front_14"/>
+<site site="site_z_front_15"/>
+<site site="site_z_front_16"/>
+<site site="site_z_front_17"/>
+<site site="site_z_front_18"/>
+<site site="site_z_front_19"/>
+<site site="site_z_front_20"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_2_z_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_back_1"/>
+<site site="site_z_back_2"/>
+<site site="site_z_back_3"/>
+<site site="site_z_back_4"/>
+<site site="site_z_back_5"/>
+<site site="site_z_back_6"/>
+<site site="site_z_back_7"/>
+<site site="site_z_back_8"/>
+<site site="site_z_back_9"/>
+<site site="site_z_back_10"/>
+<site site="site_z_back_11"/>
+<site site="site_z_back_12"/>
+<site site="site_z_back_13"/>
+<site site="site_z_back_14"/>
+<site site="site_z_back_15"/>
+<site site="site_z_back_16"/>
+<site site="site_z_back_17"/>
+<site site="site_z_back_18"/>
+<site site="site_z_back_19"/>
+<site site="site_z_back_20"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_3_y_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_front_1"/>
+<site site="site_y_front_2"/>
+<site site="site_y_front_3"/>
+<site site="site_y_front_4"/>
+<site site="site_y_front_5"/>
+<site site="site_y_front_6"/>
+<site site="site_y_front_7"/>
+<site site="site_y_front_8"/>
+<site site="site_y_front_9"/>
+<site site="site_y_front_10"/>
+<site site="site_y_front_11"/>
+<site site="site_y_front_12"/>
+<site site="site_y_front_13"/>
+<site site="site_y_front_14"/>
+<site site="site_y_front_15"/>
+<site site="site_y_front_16"/>
+<site site="site_y_front_17"/>
+<site site="site_y_front_18"/>
+<site site="site_y_front_19"/>
+<site site="site_y_front_20"/>
+<site site="site_y_front_21"/>
+<site site="site_y_front_22"/>
+<site site="site_y_front_23"/>
+<site site="site_y_front_24"/>
+<site site="site_y_front_25"/>
+<site site="site_y_front_26"/>
+<site site="site_y_front_27"/>
+<site site="site_y_front_28"/>
+<site site="site_y_front_29"/>
+<site site="site_y_front_30"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_3_y_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_y_back_1"/>
+<site site="site_y_back_2"/>
+<site site="site_y_back_3"/>
+<site site="site_y_back_4"/>
+<site site="site_y_back_5"/>
+<site site="site_y_back_6"/>
+<site site="site_y_back_7"/>
+<site site="site_y_back_8"/>
+<site site="site_y_back_9"/>
+<site site="site_y_back_10"/>
+<site site="site_y_back_11"/>
+<site site="site_y_back_12"/>
+<site site="site_y_back_13"/>
+<site site="site_y_back_14"/>
+<site site="site_y_back_15"/>
+<site site="site_y_back_16"/>
+<site site="site_y_back_17"/>
+<site site="site_y_back_18"/>
+<site site="site_y_back_19"/>
+<site site="site_y_back_20"/>
+<site site="site_y_back_21"/>
+<site site="site_y_back_22"/>
+<site site="site_y_back_23"/>
+<site site="site_y_back_24"/>
+<site site="site_y_back_25"/>
+<site site="site_y_back_26"/>
+<site site="site_y_back_27"/>
+<site site="site_y_back_28"/>
+<site site="site_y_back_29"/>
+<site site="site_y_back_30"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_3_z_front" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_front_1"/>
+<site site="site_z_front_2"/>
+<site site="site_z_front_3"/>
+<site site="site_z_front_4"/>
+<site site="site_z_front_5"/>
+<site site="site_z_front_6"/>
+<site site="site_z_front_7"/>
+<site site="site_z_front_8"/>
+<site site="site_z_front_9"/>
+<site site="site_z_front_10"/>
+<site site="site_z_front_11"/>
+<site site="site_z_front_12"/>
+<site site="site_z_front_13"/>
+<site site="site_z_front_14"/>
+<site site="site_z_front_15"/>
+<site site="site_z_front_16"/>
+<site site="site_z_front_17"/>
+<site site="site_z_front_18"/>
+<site site="site_z_front_19"/>
+<site site="site_z_front_20"/>
+<site site="site_z_front_21"/>
+<site site="site_z_front_22"/>
+<site site="site_z_front_23"/>
+<site site="site_z_front_24"/>
+<site site="site_z_front_25"/>
+<site site="site_z_front_26"/>
+<site site="site_z_front_27"/>
+<site site="site_z_front_28"/>
+<site site="site_z_front_29"/>
+<site site="site_z_front_30"/>
+            </spatial>
+        </tendon>
+    
+        <tendon>
+            <spatial name="tendon_3_z_back" stiffness="0.0" damping="0.0" width="0.002">
+                <site site="site_z_back_1"/>
+<site site="site_z_back_2"/>
+<site site="site_z_back_3"/>
+<site site="site_z_back_4"/>
+<site site="site_z_back_5"/>
+<site site="site_z_back_6"/>
+<site site="site_z_back_7"/>
+<site site="site_z_back_8"/>
+<site site="site_z_back_9"/>
+<site site="site_z_back_10"/>
+<site site="site_z_back_11"/>
+<site site="site_z_back_12"/>
+<site site="site_z_back_13"/>
+<site site="site_z_back_14"/>
+<site site="site_z_back_15"/>
+<site site="site_z_back_16"/>
+<site site="site_z_back_17"/>
+<site site="site_z_back_18"/>
+<site site="site_z_back_19"/>
+<site site="site_z_back_20"/>
+<site site="site_z_back_21"/>
+<site site="site_z_back_22"/>
+<site site="site_z_back_23"/>
+<site site="site_z_back_24"/>
+<site site="site_z_back_25"/>
+<site site="site_z_back_26"/>
+<site site="site_z_back_27"/>
+<site site="site_z_back_28"/>
+<site site="site_z_back_29"/>
+<site site="site_z_back_30"/>
+            </spatial>
+        </tendon>
+    
+
+        <actuator>
+            <position tendon="tendon_1_y_front" /> <position tendon="tendon_1_y_back" /> <position tendon="tendon_1_z_front" /> <position tendon="tendon_1_z_back" /> <position tendon="tendon_2_y_front" /> <position tendon="tendon_2_y_back" /> <position tendon="tendon_2_z_front" /> <position tendon="tendon_2_z_back" /> <position tendon="tendon_3_y_front" /> <position tendon="tendon_3_y_back" /> <position tendon="tendon_3_z_front" /> <position tendon="tendon_3_z_back" /> 
+        </actuator>
+
+        <contact>
+            
+        <exclude body1="link_1" body2="link_2"/>
+    
+
+        <exclude body1="link_2" body2="link_3"/>
+    
+
+        <exclude body1="link_3" body2="link_4"/>
+    
+
+        <exclude body1="link_4" body2="link_5"/>
+    
+
+        <exclude body1="link_5" body2="link_6"/>
+    
+
+        <exclude body1="link_6" body2="link_7"/>
+    
+
+        <exclude body1="link_7" body2="link_8"/>
+    
+
+        <exclude body1="link_8" body2="link_9"/>
+    
+
+        <exclude body1="link_9" body2="link_10"/>
+    
+
+        <exclude body1="link_10" body2="link_11"/>
+    
+
+        <exclude body1="link_11" body2="link_12"/>
+    
+
+        <exclude body1="link_12" body2="link_13"/>
+    
+
+        <exclude body1="link_13" body2="link_14"/>
+    
+
+        <exclude body1="link_14" body2="link_15"/>
+    
+
+        <exclude body1="link_15" body2="link_16"/>
+    
+
+        <exclude body1="link_16" body2="link_17"/>
+    
+
+        <exclude body1="link_17" body2="link_18"/>
+    
+
+        <exclude body1="link_18" body2="link_19"/>
+    
+
+        <exclude body1="link_19" body2="link_20"/>
+    
+
+        <exclude body1="link_20" body2="link_21"/>
+    
+
+        <exclude body1="link_21" body2="link_22"/>
+    
+
+        <exclude body1="link_22" body2="link_23"/>
+    
+
+        <exclude body1="link_23" body2="link_24"/>
+    
+
+        <exclude body1="link_24" body2="link_25"/>
+    
+
+        <exclude body1="link_25" body2="link_26"/>
+    
+
+        <exclude body1="link_26" body2="link_27"/>
+    
+
+        <exclude body1="link_27" body2="link_28"/>
+    
+
+        <exclude body1="link_28" body2="link_29"/>
+    
+
+        <exclude body1="link_29" body2="link_30"/>
+    
+        </contact>
+
+        <sensor>
+            <force name="force_y_front_1" site="site_y_front_1"/><force name="force_y_back_1" site="site_y_back_1"/><force name="force_z_front_1" site="site_z_front_1"/><force name="force_z_back_1" site="site_z_back_1"/><force name="force_y_front_2" site="site_y_front_2"/><force name="force_y_back_2" site="site_y_back_2"/><force name="force_z_front_2" site="site_z_front_2"/><force name="force_z_back_2" site="site_z_back_2"/><force name="force_y_front_3" site="site_y_front_3"/><force name="force_y_back_3" site="site_y_back_3"/><force name="force_z_front_3" site="site_z_front_3"/><force name="force_z_back_3" site="site_z_back_3"/>
+        </sensor>
+
+
+    </mujoco>
+    

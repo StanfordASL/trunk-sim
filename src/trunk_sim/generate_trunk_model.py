@@ -2,9 +2,9 @@ GEOM_COLOR = "0 0 0 1"
 PAYLOAD_COLOR = "0 1 0 1"
 
 
-def payload_body(mass=0.1, size=0.1, offset=0.1):
+def payload_body(mass=0.1, size=0.1, offset=0.0):
     return f"""
-        <body name="payload" pos="{size+offset} 0 0">
+        <body name="payload" pos="{offset} 0 0">
             <geom name="payload_geom" size="{size}" mass="{mass}" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="sphere" rgba="{PAYLOAD_COLOR}"/>
         </body>
     """
@@ -31,7 +31,7 @@ def link(
     return f"""
         <body name="link_{index}" pos="{size} 0 0">
             {joint_str}
-            <geom name="geom_{index}" size="{radius} {size/spacing}" density="{density}" pos="{radius} 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="{GEOM_COLOR}"/>
+            <geom name="geom_{index}" size="{radius} {size/spacing}" density="{density}" pos="0 0 0" quat="0.707107 0 -0.707107 0" type="cylinder" rgba="{GEOM_COLOR}"/>
             <site name="site_y_front_{index}" pos="0 {radius} 0"/> 
             <site name="site_y_back_{index}" pos="0 -{radius} 0"/>
             <site name="site_z_front_{index}" pos="0 0 {radius}"/> 
@@ -112,13 +112,16 @@ def base(bodies, tendons="", muscles="", contacts="", sensors=""):
 
 
 def generate_trunk_model(
-    num_segments, num_links_per_segment, tip_mass=0.1, radius=0.025, length=0.32, spacing=2.0
+    num_segments, num_links_per_segment, tip_mass=0.1, radius=0.025, length=0.32, spacing=2.0, tip_size=None
 ):
     num_links = num_segments * num_links_per_segment
     size = length / num_links
 
+    if tip_size is None:
+        tip_size = (1 + tip_mass) * radius
+
     bodies_string = (
-        payload_body(mass=tip_mass, size=(1 + tip_mass) * radius, offset=size)
+        payload_body(mass=tip_mass, size=tip_size, offset=size)
         if tip_mass > 0
         else ""
     )
@@ -149,7 +152,12 @@ def generate_trunk_model(
         [contact(f"link_{i}", f"link_{i+1}") for i in range(1, num_links)]
     )
 
-    return base(
+    model = base(
         bodies_string, tendons=tendons_string, muscles=muscles_string, contacts=contacts, sensors=sensors_string
     )
+    export_trunk_model(model)
+    return model
     
+def export_trunk_model(xml):
+    with open("trunk.xml", "w") as f:
+        f.write(xml)
