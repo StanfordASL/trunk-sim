@@ -1,6 +1,6 @@
 [project]
 name = "trunk-sim"
-version = "0.1.0"
+version = "0.3.0"
 description = "ASL Trunk simulator"
 readme = "README.md"
 keywords = ["trunk", "simulator", "robotics"]
