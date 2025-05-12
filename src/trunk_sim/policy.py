@@ -27,9 +27,19 @@ class HarmonicPolicy(TrunkPolicy):
         """
         Initialize the policy with a given discrete-time frequency and amplitude.
         """
-        self.frequencies = [np.random.uniform(*frequency_range) for _ in range(num_segments)]
-        self.amplitudes = [np.random.uniform(*amplitude_range) for _ in range(num_segments)]
-        self.phases = [np.random.uniform(*phase_range) for _ in range(num_segments)]
+
+        if len(frequency_range) != num_segments:
+            frequency_range = [frequency_range for _ in range(num_segments)]
+        
+        if len(amplitude_range) != num_segments:
+            amplitude_range = [amplitude_range for _ in range(num_segments)]
+
+        if len(phase_range) != num_segments:
+            phase_range = [phase_range for _ in range(num_segments)]
+
+        self.frequencies = [np.random.uniform(*frequency_range[i]) for i in range(num_segments)]
+        self.amplitudes = [np.random.uniform(*amplitude_range[i]) for i in range(num_segments)]
+        self.phases = [np.random.uniform(*phase_range[i]) for i in range(num_segments)]
         self.signs = [np.random.choice([-1, 1]) for _ in range(num_segments)]
         self.policy = lambda t, _: np.array([[
             self.amplitudes[i] * np.sin(self.signs[i] * 2 * np.pi * self.frequencies[i] * t + self.phases[i]),
