@@ -77,11 +77,11 @@ def main(args):
     for rollout_idx in tqdm(range(args.num_rollouts)):
         if args.policy == "harmonic":
             policy = HarmonicPolicy(
-                frequency_range=[0.0,0.5], 
+                frequency_range=[0.1,1.0], 
                 amplitude_range=[
-                    [0.0,80.0],
-                    [0.0,50.0],
-                    [0.0,30.0]
+                    [10.0,20.0],
+                    [6.25,12.5],
+                    [3.75,7.5]
                 ],
                 phase_range=[0.0,2*np.pi], num_segments=args.num_segments
             )
